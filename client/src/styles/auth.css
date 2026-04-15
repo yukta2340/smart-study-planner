@@ -1,0 +1,179 @@
+
+/* Auth Container - Vertical Layout */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.auth-clerk-wrap {
+  width: 100%;
+  max-width: 460px;
+}
+
+.auth-clerk-wrap .cl-rootBox,
+.auth-clerk-wrap .cl-card {
+  width: 100%;
+}
+
+.auth-clerk-wrap .cl-card {
+  background: rgba(24, 28, 44, 0.94);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.auth-clerk-wrap .cl-headerTitle,
+.auth-clerk-wrap .cl-headerSubtitle,
+.auth-clerk-wrap .cl-formFieldLabel,
+.auth-clerk-wrap .cl-formResendCodeLink,
+.auth-clerk-wrap .cl-footerActionText,
+.auth-clerk-wrap .cl-footerActionLink,
+.auth-clerk-wrap .cl-identityPreviewText,
+.auth-clerk-wrap .cl-identityPreviewEditButton,
+.auth-clerk-wrap .cl-formFieldHintText,
+.auth-clerk-wrap .cl-formFieldErrorText,
+.auth-clerk-wrap .cl-dividerText,
+.auth-clerk-wrap .cl-internal-b3fm6y,
+.auth-clerk-wrap .cl-internal-1dauvpw,
+.auth-clerk-wrap .cl-internal-16mu0x,
+.auth-clerk-wrap .cl-internal-180wb59,
+.auth-clerk-wrap .cl-internal-19d6s6u {
+  color: #fff;
+}
+
+.auth-clerk-wrap .cl-formFieldInput,
+.auth-clerk-wrap .cl-formFieldInputShowPasswordButton,
+.auth-clerk-wrap .cl-otpCodeFieldInput {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.auth-clerk-wrap .cl-formFieldInput::placeholder {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.auth-clerk-wrap .cl-socialButtonsBlockButton,
+.auth-clerk-wrap .cl-socialButtonsBlockButtonText,
+.auth-clerk-wrap .cl-formButtonPrimary {
+  color: #fff;
+}
+
+.dark .auth-clerk-wrap .cl-card {
+  background: rgba(24, 28, 44, 0.94);
+}
+
+@media (max-width: 600px) {
+  .auth-container {
+    padding: 14px;
+  }
+
+  .auth-clerk-wrap {
+    max-width: 100%;
+  }
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 700px;
+  text-align: center;
+}
+
+/* Form Elements */
+.card h2 {
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 24px;
+}
+
+.card input {
+  width: 100%;
+  padding: 12px 15px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.card input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+.card button {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 10px;
+  background: #667eea;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.3s;
+}
+
+.card button:hover {
+  transform: translateY(-2px);
+  background: #5a67d8;
+}
+
+.card button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.error {
+  color: #ff4d4d;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.link {
+  margin-top: 10px;
+  cursor: pointer;
+  color: #667eea;
+  opacity: 0.8;
+  transition: opacity 0.3s;
+}
+
+.link:hover {
+  text-decoration: underline;
+  opacity: 1;
+}
+
+/* Dark theme adjustments */
+.dark .card {
+  background: rgba(30, 30, 47, 0.95);
+  color: white;
+}
+
+.dark .card input {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.dark .card input:focus {
+  border-color: #4ecdc4;
+  box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.2);
+}
+
+.dark .card button {
+  background: #4ecdc4;
+}
+
+.dark .card button:hover {
+  background: #45b7aa;
+}
