@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
+const authMiddleware = require("../middleware/authMiddleware");
 const {
   getTasks,
   addTask,
@@ -19,18 +20,18 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-// Task routes are kept open because the app currently authenticates with Clerk on frontend.
-// Legacy JWT middleware can be restored after backend token strategy is unified.
-router.get("/tasks", getTasks);
-router.post("/add-task", addTask);
-router.put("/update-task/:id", updateTask);
-router.delete("/delete-task/:id", deleteTask);
-router.post("/task-assistant", taskAssistant);
-router.post("/upload-task-image", upload.single("taskImage"), uploadTaskImage);
-router.post("/chat-assistant", chatAssistant);
-router.get("/ai-suggestions", getAISuggestions);
-router.post("/notify-task-push", sendTaskPushNotification);
-router.post("/notify-task-sms", sendTaskPushNotification);
-router.post("/register-device-token", registerDeviceToken);
+// 🔐 All task routes are now protected with authMiddleware
+// Supports both Clerk tokens (X-User-ID header) and legacy JWT tokens
+router.get("/tasks", authMiddleware, getTasks);
+router.post("/add-task", authMiddleware, addTask);
+router.put("/update-task/:id", authMiddleware, updateTask);
+router.delete("/delete-task/:id", authMiddleware, deleteTask);
+router.post("/task-assistant", authMiddleware, taskAssistant);
+router.post("/upload-task-image", authMiddleware, upload.single("taskImage"), uploadTaskImage);
+router.post("/chat-assistant", authMiddleware, chatAssistant);
+router.get("/ai-suggestions", authMiddleware, getAISuggestions);
+router.post("/notify-task-push", authMiddleware, sendTaskPushNotification);
+router.post("/notify-task-sms", authMiddleware, sendTaskPushNotification);
+router.post("/register-device-token", authMiddleware, registerDeviceToken);
 
 module.exports = router;

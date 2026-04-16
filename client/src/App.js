@@ -16,6 +16,9 @@ import ProtectedRoute from "./components/ProtectedRoute";
 // FCM auto-registration
 import { registerDeviceToken } from "./utils/fcmClient";
 
+// API
+import { setCurrentClerkUserId } from "./services/api";
+
 // Styles
 import "./styles/home.css";
 import "./styles/dashboard.css";
@@ -24,14 +27,25 @@ import "./styles/calendar.css";
 import "./styles/chatbot.css";
 
 function AppContent() {
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, userId, isLoaded } = useAuth();
 
   useEffect(() => {
-    if (isSignedIn) {
+    console.log("🔐 Auth State:", { isLoaded, isSignedIn, userId });
+    
+    if (isLoaded && isSignedIn && userId) {
+      // Set Clerk user ID for API requests
+      setCurrentClerkUserId(userId);
+      
       // Register this browser as an FCM notification target
-      registerDeviceToken().catch(() => {});
+      registerDeviceToken().catch((err) => {
+        console.error("❌ FCM registration failed:", err);
+      });
+    } else if (isLoaded && !isSignedIn) {
+      // Clear user ID when logged out
+      console.log("🚪 User logged out, clearing user ID");
+      setCurrentClerkUserId(null);
     }
-  }, [isSignedIn]);
+  }, [isLoaded, isSignedIn, userId]);
 
   return (
     <Routes>

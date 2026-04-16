@@ -183,10 +183,78 @@ const getBillingFallbackReply = (task) => {
   ].join("\n");
 };
 
+const buildChatContext = (task) => {
+  if (!task) {
+    return "No task is selected. Provide general study coaching with concise, practical steps.";
+  }
+
+  return [
+    `Task subject: ${task.subject || "General Study"}`,
+    `Task description: ${task.description || "No description provided."}`,
+    `Task difficulty (1-5): ${task.difficulty || "3"}`,
+    `Task deadline: ${task.deadline ? new Date(task.deadline).toISOString() : "Not specified"}`,
+    `Task urgency: ${task.deadline ? getUrgencyLabel(task.deadline) : "unknown"}`,
+  ].join("\n");
+};
+
+const requestGroqChatCompletion = async ({ message, task }) => {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    throw new Error("GROQ_API_KEY is not configured");
+  }
+
+  const apiUrl = process.env.GROQ_API_URL || "https://api.groq.com/openai/v1/chat/completions";
+  const model = process.env.GROQ_MODEL || "llama-3.1-8b-instant";
+
+  const systemPrompt = [
+    "You are Smart Study Planner assistant.",
+    "Give clear, short, actionable study guidance.",
+    "Prefer bullet points and practical next steps.",
+    "If a task context is provided, tailor the answer to it.",
+    "Do not invent deadlines or grades.",
+  ].join(" ");
+
+  const response = await fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      temperature: 0.4,
+      max_tokens: 500,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "system", content: buildChatContext(task) },
+        { role: "user", content: message },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`Groq API request failed (${response.status}): ${errorBody}`);
+  }
+
+  const data = await response.json();
+  const reply = data?.choices?.[0]?.message?.content?.trim();
+
+  if (!reply) {
+    throw new Error("Groq API returned an empty response");
+  }
+
+  return {
+    response: reply,
+    model: data?.model || model,
+  };
+};
+
 // 📥 Get All Tasks
 exports.getTasks = async (req, res) => {
   try {
-    const tasks = await Task.find().sort({ createdAt: -1 });
+    const userId = req.user.id;
+    const tasks = await Task.find({ userId }).sort({ createdAt: -1 });
     res.json(tasks);
   } catch (err) {
     console.error("Get Tasks Error:", err);
@@ -198,6 +266,7 @@ exports.getTasks = async (req, res) => {
 exports.addTask = async (req, res) => {
   try {
     const { subject, description, deadline, difficulty } = req.body;
+    const userId = req.user.id;
 
     if (!subject || !deadline || !difficulty) {
       return res.status(400).json({ error: "Subject, deadline, and difficulty are required" });
@@ -209,6 +278,7 @@ exports.addTask = async (req, res) => {
     }
 
     const newTask = new Task({
+      userId,
       subject,
       description: description || "",
       deadline: parsedDeadline,
@@ -227,7 +297,12 @@ exports.addTask = async (req, res) => {
 // ✏️ Update Task (complete / edit)
 exports.updateTask = async (req, res) => {
   try {
-    const updated = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const userId = req.user.id;
+    const updated = await Task.findOneAndUpdate(
+      { _id: req.params.id, userId },
+      req.body,
+      { new: true }
+    );
 
     if (!updated) {
       return res.status(404).json({ error: "Task not found" });
@@ -243,7 +318,8 @@ exports.updateTask = async (req, res) => {
 // ❌ Delete Task
 exports.deleteTask = async (req, res) => {
   try {
-    const deleted = await Task.findByIdAndDelete(req.params.id);
+    const userId = req.user.id;
+    const deleted = await Task.findOneAndDelete({ _id: req.params.id, userId });
 
     if (!deleted) {
       return res.status(404).json({ error: "Task not found" });
@@ -260,6 +336,7 @@ exports.deleteTask = async (req, res) => {
 exports.taskAssistant = async (req, res) => {
   try {
     const { taskId, message } = req.body;
+    const userId = req.user.id;
 
     if (!taskId && !message) {
       return res.status(400).json({ error: "taskId or message is required" });
@@ -267,7 +344,7 @@ exports.taskAssistant = async (req, res) => {
 
     let task = null;
     if (taskId) {
-      task = await Task.findById(taskId);
+      task = await Task.findOne({ _id: taskId, userId });
       if (!task) {
         return res.status(404).json({ error: "Task not found" });
       }
@@ -344,8 +421,10 @@ exports.uploadTaskImage = async (req, res) => {
     const difficulty = parseDifficultyFromText(extractedText);
     const parsedDeadline = parseDeadlineFromText(extractedText);
     const completedFromUpload = String(req.body?.completed || "false").toLowerCase() === "true";
+    const userId = req.user.id;
 
     const newTask = new Task({
+      userId,
       subject,
       description,
       difficulty,
@@ -375,7 +454,8 @@ exports.uploadTaskImage = async (req, res) => {
 // 🧠 AI Dashboard Suggestions
 exports.getAISuggestions = async (req, res) => {
   try {
-    const tasks = await Task.find().sort({ deadline: 1 });
+    const userId = req.user.id;
+    const tasks = await Task.find({ userId }).sort({ deadline: 1 });
 
     if (!tasks.length) {
       return res.json({
@@ -430,6 +510,7 @@ exports.getAISuggestions = async (req, res) => {
 exports.chatAssistant = async (req, res) => {
   try {
     const { message, taskId } = req.body;
+    const userId = req.user.id;
 
     if (!message || !message.trim()) {
       return res.status(400).json({ error: "message is required" });
@@ -437,17 +518,32 @@ exports.chatAssistant = async (req, res) => {
 
     let task = null;
     if (taskId) {
-      task = await Task.findById(taskId);
+      task = await Task.findOne({ _id: taskId, userId });
       if (!task) {
         return res.status(404).json({ error: "Task not found" });
       }
     }
 
-    const answer = generateLocalChatResponse({ userMessage: message.trim(), task });
+    const cleanMessage = message.trim();
+    let answer = null;
+    let model = "local-study-coach";
+
+    try {
+      const aiResult = await requestGroqChatCompletion({
+        message: cleanMessage,
+        task,
+      });
+      answer = aiResult.response;
+      model = aiResult.model;
+    } catch (aiErr) {
+      console.warn("Groq chatbot unavailable, falling back to local assistant:", aiErr.message);
+      answer = generateLocalChatResponse({ userMessage: cleanMessage, task });
+    }
+
     return res.json({
       success: true,
       response: answer,
-      model: "local-study-coach",
+      model,
       taskId: task?._id || null,
     });
   } catch (err) {

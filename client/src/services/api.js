@@ -6,7 +6,17 @@ const API = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000",
 });
 
-// 🔐 Attach token to every request
+// Store Clerk user ID when available
+let currentClerkUserId = null;
+
+export const setCurrentClerkUserId = (userId) => {
+  console.log("🔐 Setting Clerk User ID:", userId);
+  currentClerkUserId = userId;
+};
+
+export const getCurrentClerkUserId = () => currentClerkUserId;
+
+// 🔐 Attach tokens and user ID to every request
 API.interceptors.request.use((req) => {
   const token = localStorage.getItem("token");
 
@@ -14,8 +24,27 @@ API.interceptors.request.use((req) => {
     req.headers.Authorization = `Bearer ${token}`;
   }
 
+  // Send Clerk user ID if available
+  if (currentClerkUserId) {
+    req.headers["X-User-ID"] = currentClerkUserId;
+    console.log(`📤 Sending X-User-ID: ${currentClerkUserId} to ${req.url}`);
+  } else {
+    console.warn("⚠️ No Clerk User ID available for request:", req.url);
+  }
+
   return req;
 });
+
+// Log response errors
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      console.error("❌ 401 Unauthorized:", error.response?.data);
+    }
+    return Promise.reject(error);
+  }
+);
 
 // =====================
 // 🔐 AUTH APIs

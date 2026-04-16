@@ -29,6 +29,8 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("token");
     setToken(null);
     setUser(null);
+    // Clear any cached user data
+    localStorage.removeItem("userData");
   };
 
   return (

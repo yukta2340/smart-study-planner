@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
 import { getTasks, notifyTaskPush } from "../services/api";
 
 // Components
@@ -21,6 +22,7 @@ function Planner() {
   const [toast, setToast] = useState(null);
   const notifiedAtRef = useRef(new Map());
   const location = useLocation();
+  const { isSignedIn, userId } = useAuth();
 
   const notifyTask = useCallback((title, body, dedupeKey, smsPayload = null) => {
     const now = Date.now();
@@ -47,18 +49,26 @@ function Planner() {
 
   // 📥 Fetch Tasks
   const fetchTasks = useCallback(async () => {
+    if (!isSignedIn) {
+      console.log("⏳ Not signed in yet, skipping task fetch");
+      setTasks([]);
+      return;
+    }
+    
+    console.log("📥 Fetching tasks for user:", userId);
     try {
       const response = await getTasks();
+      console.log("✅ Tasks fetched successfully:", response.data.length, "tasks");
       setTasks(response.data);
     } catch (err) {
-      console.error("Error fetching tasks:", err);
+      console.error("❌ Error fetching tasks:", err.response?.status, err.response?.data || err.message);
       setTasks([]); // Set to empty array on error
     }
-  }, []);
+  }, [isSignedIn, userId]);
 
   useEffect(() => {
     fetchTasks();
-  }, [fetchTasks]);
+  }, [fetchTasks, userId]);
 
   useEffect(() => {
     if (!("Notification" in window)) return;
