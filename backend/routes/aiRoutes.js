@@ -1,10 +1,9 @@
 const express = require('express');
-const { getTaskHelp, getSuggestions, chatWithAssistant } = require('../controllers/aiController');
+const { getDailyPlan, getWeakTopics } = require('../controllers/aiController');
 const { protect } = require('../middleware/authMiddleware');
 const router = express.Router();
 
-router.post('/help', protect, getTaskHelp);
-router.get('/suggestions', protect, getSuggestions);
-router.post('/chat', protect, chatWithAssistant);
+router.get('/daily-plan', protect, getDailyPlan);
+router.get('/weak-topics', protect, getWeakTopics);
 
 module.exports = router;

@@ -7,6 +7,7 @@ const setupLogging = require('./middleware/loggerMiddleware');
 // Route Imports
 const authRoutes = require('./routes/authRoutes');
 const subjectRoutes = require('./routes/subjectRoutes');
+const topicRoutes = require('./routes/topicRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
@@ -25,6 +26,7 @@ setupLogging(app);
 // API Routes (Updated to match Top-Tier requirements)
 app.use('/api/auth', authRoutes);
 app.use('/api/subjects', subjectRoutes);
+app.use('/api/topics', topicRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/analytics', analyticsRoutes);
