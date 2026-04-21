@@ -42,6 +42,14 @@ const topicSchema = mongoose.Schema(
     lastReviewedDate: {
       type: Date,
     },
+    isWeakTopic: {
+      type: Boolean,
+      default: false,
+    },
+    studyIntensity: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
