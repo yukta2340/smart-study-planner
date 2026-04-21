@@ -1,8 +1,8 @@
 const express = require('express');
-const { getAssistantAdvice } = require('../controllers/aiController');
+const { getWeeklyRoadmap } = require('../controllers/aiController');
 const { protect } = require('../middleware/authMiddleware');
 const router = express.Router();
 
-router.post('/chat', protect, getAssistantAdvice);
+router.get('/weekly-roadmap', protect, getWeeklyRoadmap);
 
 module.exports = router;

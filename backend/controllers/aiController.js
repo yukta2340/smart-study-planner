@@ -1,75 +1,103 @@
 const Topic = require('../models/Topic');
-const StudySession = require('../models/StudySession');
 const sendResponse = require('../utils/responseHelper');
 
 /**
- * @desc    AI Assistant: "What should I study today?"
- * @route   POST /api/ai/chat
+ * @desc    Smart 7-Day Scheduler: Automated Workload Distribution
+ * @route   GET /api/ai/weekly-roadmap
  * @access  Private
  */
-const getAssistantAdvice = async (req, res) => {
+const getWeeklyRoadmap = async (req, res) => {
   try {
-    const { message } = req.body;
-    const lowerMsg = message.toLowerCase();
-
-    // 1. Fetch data for analysis
     const topics = await Topic.find({ isCompleted: false }).populate({
       path: 'subject',
       match: { user: req.user._id }
     });
+
     const userTopics = topics.filter(t => t.subject !== null);
-    const sessions = await StudySession.find({ user: req.user._id });
 
-    // 2. Identify the #1 priority using the Decision Engine logic
-    if (lowerMsg.includes('study') || lowerMsg.includes('today') || lowerMsg.includes('plan')) {
-      if (!userTopics.length) {
-        return sendResponse(res, 200, 'AI Advice', {
-          response: "You've conquered all your units! 🏆 Take a break or start a new subject."
-        });
-      }
+    if (!userTopics.length) {
+      return sendResponse(res, 200, 'Your schedule is clear! ⛱️');
+    }
 
-      // Calculate priorities
-      const analyzed = userTopics.map(t => {
-        const topicSessions = sessions.filter(s => s.topic.toString() === t._id.toString());
-        const totalTime = topicSessions.reduce((acc, s) => acc + s.durationMinutes, 0);
-        const weakScore = totalTime < 30 ? 5 : 0;
-        const daysUntil = Math.ceil((new Date(t.deadline) - new Date()) / (1000 * 60 * 60 * 24));
-        const deadlineWeight = daysUntil <= 2 ? 10 : 3;
-        
-        return { topic: t, score: deadlineWeight + t.difficulty + weakScore, daysUntil };
-      });
-
-      const top = analyzed.sort((a, b) => b.score - a.score)[0];
-
-      // 3. Build a Conversational Response
-      let personality = `Based on your deadlines and progress, you should definitely focus on **${top.topic.name}** (${top.topic.subject.name}) today.`;
+    // 1. RANKING (Decision Engine Logic)
+    const analyzed = userTopics.map(t => {
+      const today = new Date();
+      const deadline = new Date(t.deadline);
+      const daysUntil = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
       
-      if (top.daysUntil <= 2) {
-        personality += " ⚠️ The deadline is critical!";
-      } else if (top.score > 12) {
-        personality += " 📉 It looks like you haven't spent much time here recently, so it's a high-priority weak area.";
-      } else {
-        personality += " 📚 It's the perfect time for a routine revision to keep the knowledge fresh.";
-      }
+      let deadlineNorm = daysUntil <= 1 ? 1.0 : (daysUntil <= 3 ? 0.8 : (daysUntil <= 7 ? 0.5 : 0.2));
+      let revisionNorm = (t.nextReviewDate && new Date(t.nextReviewDate) <= today) ? 1.0 : 0.1;
+      
+      const score = (deadlineNorm * 0.5) + (t.difficulty / 5 * 0.2) + (revisionNorm * 0.3);
 
-      return sendResponse(res, 200, 'AI Assistant Advice', {
-        response: personality,
-        recommendation: {
-          topic: top.topic.name,
-          subject: top.topic.subject.name,
-          priority: top.score,
-          timebox: top.topic.difficulty * 25
-        }
+      return { 
+        ...t._doc, 
+        priority: score, 
+        subjectName: t.subject.name, 
+        deadlineInDays: daysUntil 
+      };
+    }).sort((a, b) => b.priority - a.priority);
+
+    // 2. 7-DAY SMART DISTRIBUTION (Bin Packing)
+    const MAX_DAILY_MINS = 360; // 6 hours
+    const roadmap = [];
+    
+    // Initialize 7 days
+    for (let i = 0; i < 7; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() + i);
+      roadmap.push({
+        date: date.toDateString(),
+        remainingMins: MAX_DAILY_MINS,
+        tasks: [],
+        status: 'Optimal'
       });
     }
 
-    // Default chat
-    sendResponse(res, 200, 'AI Chat', {
-      response: "I'm your AI Study Coach. Ask me 'What should I study today?' to see your optimized plan!"
+    const unassigned = [];
+
+    analyzed.forEach(topic => {
+      let assigned = false;
+      
+      // Try to find the earliest day that has room AND is before the deadline
+      for (let dayIdx = 0; dayIdx < roadmap.length; dayIdx++) {
+        const currentDay = roadmap[dayIdx];
+        
+        // Constraint: Must be scheduled before deadline day
+        if (dayIdx > topic.deadlineInDays && topic.deadlineInDays >= 0) continue;
+
+        if (currentDay.remainingMins >= topic.estimatedTime) {
+          currentDay.tasks.push({
+            name: `${topic.subjectName}: ${topic.name}`,
+            time: topic.estimatedTime,
+            isRevision: topic.nextReviewDate && new Date(topic.nextReviewDate) <= new Date()
+          });
+          currentDay.remainingMins -= topic.estimatedTime;
+          assigned = true;
+          break;
+        }
+      }
+
+      if (!assigned) unassigned.push(topic.name);
     });
+
+    // 3. Post-process Status (Identify Overload)
+    roadmap.forEach(day => {
+      if (day.remainingMins < 60) day.status = '🔥 Intense';
+      if (day.tasks.length === 0) day.status = '🍀 Light';
+    });
+
+    sendResponse(res, 200, '7-Day Smart Roadmap Generated', {
+        roadmap,
+        overloadWarnings: unassigned.length > 0 ? {
+            message: "Some tasks couldn't fit into the 7-day window. Consider increasing daily capacity.",
+            tasks: unassigned
+        } : null
+    });
+
   } catch (error) {
-    sendResponse(res, 500, 'AI error', error.message);
+    sendResponse(res, 500, 'Scheduler Error', error.message);
   }
 };
 
-module.exports = { getAssistantAdvice };
+module.exports = { getWeeklyRoadmap };

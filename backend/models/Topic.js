@@ -22,6 +22,10 @@ const topicSchema = mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    estimatedTime: {
+      type: Number,
+      default: 60, // Default 60 mins
+    },
     isCompleted: {
       type: Boolean,
       default: false,
