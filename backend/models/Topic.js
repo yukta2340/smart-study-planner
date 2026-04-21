@@ -22,6 +22,18 @@ const topicSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Spaced Repetition Features
+    reviewCount: {
+      type: Number,
+      default: 0,
+    },
+    nextReviewDate: {
+      type: Date,
+      default: Date.now,
+    },
+    lastReviewedDate: {
+      type: Date,
+    },
   },
   {
     timestamps: true,

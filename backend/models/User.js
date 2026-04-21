@@ -16,6 +16,22 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    // Gamification Features
+    xp: {
+      type: Number,
+      default: 0,
+    },
+    level: {
+      type: Number,
+      default: 1,
+    },
+    streak: {
+      type: Number,
+      default: 0,
+    },
+    lastActiveDate: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
