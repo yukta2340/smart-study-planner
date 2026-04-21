@@ -1,33 +1,41 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const morgan = require('morgan');
 const connectDB = require('./config/db');
+const setupLogging = require('./middleware/loggerMiddleware');
+
+// Route Imports
 const authRoutes = require('./routes/authRoutes');
+const subjectRoutes = require('./routes/subjectRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const aiRoutes = require('./routes/aiRoutes');
-const otpRoutes = require('./routes/otpRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
 
 dotenv.config();
-
 connectDB();
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(morgan('dev'));
+setupLogging(app);
 
-app.use('/api/users', authRoutes);
+// API Routes (Updated to match Top-Tier requirements)
+app.use('/api/auth', authRoutes);
+app.use('/api/subjects', subjectRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/ai', aiRoutes);
-app.use('/api/otp', otpRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
-app.get('/', (req, res) => {
-  res.send('API is running...');
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
 });
 
-// Middleware for handling 404 and global errors
+app.get('/', (req, res) => {
+  res.send('AI Smart Study Planner API is running...');
+});
+
+// Error Handling
 app.use((req, res, next) => {
   const error = new Error(`Not Found - ${req.originalUrl}`);
   res.status(404);
@@ -36,15 +44,14 @@ app.use((req, res, next) => {
 
 app.use((err, req, res, next) => {
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-  res.status(statusCode);
-  res.json({
+  res.status(statusCode).json({
+    success: false,
     message: err.message,
     stack: process.env.NODE_ENV === 'production' ? null : err.stack,
   });
 });
 
 const PORT = process.env.PORT || 5000;
-
 app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  console.log(`🚀 Top-Tier Backend running on port ${PORT}`);
 });

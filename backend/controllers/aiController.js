@@ -1,31 +1,48 @@
-// Mock AI logic (can be replaced with OpenAI/Gemini API later)
+const Topic = require('../models/Topic');
+const sendResponse = require('../utils/responseHelper');
 
-const getTaskHelp = async (req, res) => {
-  const { taskTitle } = req.body;
-  
-  // Placeholder response
-  const helpText = `For your task "${taskTitle}", I recommend breaking it into three 25-minute Pomodoro sessions. Focus on the most complex part first.`;
-  
-  res.json({ helpText });
+/**
+ * @desc    Generate a smart study plan based on difficulty and revision cycles
+ * @route   GET /api/ai/plan
+ * @access  Private
+ */
+const generateSmartPlan = async (req, res) => {
+  try {
+    // Fetch all incomplete topics for the user (via their subjects)
+    // For simplicity, we fetch all topics and filter
+    const topics = await Topic.find({ isCompleted: false }).populate({
+      path: 'subject',
+      match: { user: req.user._id }
+    });
+
+    const userTopics = topics.filter(t => t.subject !== null);
+
+    if (!userTopics.length) {
+      return sendResponse(res, 200, 'No pending topics found. Great job!');
+    }
+
+    // Advanced Scheduling Algorithm:
+    // Sort by Difficulty (Descending) and CreatedAt (Ascending for revision)
+    const sortedTopics = userTopics.sort((a, b) => {
+      if (b.difficulty !== a.difficulty) {
+        return b.difficulty - a.difficulty; // Harder topics first
+      }
+      return new Date(a.createdAt) - new Date(b.createdAt); // Older revisions first
+    });
+
+    const plan = sortedTopics.map((topic, index) => ({
+      slot: `Session ${index + 1}`,
+      topic: topic.name,
+      subject: topic.subject.name,
+      difficulty: topic.difficulty,
+      recommendedDuration: topic.difficulty * 30, // 30-150 mins
+      advice: topic.difficulty >= 4 ? 'Requires high focus. Use deep work techniques.' : 'Good for a light study session.'
+    }));
+
+    sendResponse(res, 200, 'AI-powered study plan generated', plan);
+  } catch (error) {
+    sendResponse(res, 500, 'Failed to generate plan', error.message);
+  }
 };
 
-const getSuggestions = async (req, res) => {
-  const suggestions = [
-    { type: 'tip', text: 'Try to study in the morning when your brain is most fresh.' },
-    { type: 'info', text: 'You have 3 tasks due tomorrow. Better start soon!' },
-    { type: 'warning', text: 'You have been working for 2 hours. Take a break!' }
-  ];
-  
-  res.json({ suggestions });
-};
-
-const chatWithAssistant = async (req, res) => {
-  const { message } = req.body;
-  
-  // Placeholder chatbot response
-  const response = `I'm your AI study assistant. You said: "${message}". How can I help you organize your schedule today?`;
-  
-  res.json({ response });
-};
-
-module.exports = { getTaskHelp, getSuggestions, chatWithAssistant };
+module.exports = { generateSmartPlan };

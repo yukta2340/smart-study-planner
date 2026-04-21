@@ -1,16 +1,15 @@
-
 import React, { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { useClerk } from "@clerk/clerk-react";
+import { useAppAuth } from "../context/AuthContext";
 import { ThemeContext } from "../context/ThemeContext";
 
 function Navbar() {
   const navigate = useNavigate();
-  const { signOut } = useClerk();
+  const { logout, user } = useAppAuth();
   const { toggleTheme } = useContext(ThemeContext);
 
-  const handleLogout = async () => {
-    await signOut();
+  const handleLogout = () => {
+    logout();
     navigate("/login");
   };
 
@@ -20,7 +19,9 @@ function Navbar() {
 
   return (
     <nav className="navbar">
-      <h2 className="logo">🧠 StudyAI</h2>
+      <div className="nav-brand" onClick={() => navigate("/")} style={{ cursor: 'pointer' }}>
+        <h2 className="logo">🧠 StudyAI</h2>
+      </div>
 
       <div className="nav-links">
         <button
@@ -59,8 +60,12 @@ function Navbar() {
           AI Coach
         </button>
 
-        <button type="button" onClick={toggleTheme}>🌗</button>
-        <button type="button" className="logout" onClick={handleLogout}>Logout</button>
+        <button type="button" className="theme-toggle" onClick={toggleTheme}>🌗</button>
+        
+        <div className="user-section">
+          <span className="user-name">{user?.name}</span>
+          <button type="button" className="logout" onClick={handleLogout}>Logout</button>
+        </div>
       </div>
     </nav>
   );

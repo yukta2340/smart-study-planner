@@ -1,33 +1,63 @@
-# smart-study-planner
+# 🎓 Smart Study Planner - AI-Powered Full-Stack Assistant (Advanced Version)
 
-## Project Structure
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Express](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
 
-```text
-smart-study-planner/
-├── frontend/        # React/Vite frontend app
-└── backend/         # Node.js/Express backend app
+---
+
+## 🔥 Top-Tier Upgrades (New!)
+
+### 🔐 1. Industrial-Strength Authentication
+- **JWT + Bcrypt**: Full Login/Register flow with password hashing and token-based session persistence.
+- **Strict Protected Routes**: Middleware-enforced access control for all API endpoints.
+
+### 🗄️ 2. Advanced Relational DB Design
+- **Hierarchical Schema**: `User` → `Subjects` → `Topics` → `StudySessions`.
+- **Referential Integrity**: Managed via Mongoose populated paths.
+
+### 🧠 3. Smart Scheduling Engine (AI-Powered)
+- **Difficulty Weights**: Topics are weighted (1-5) to adjust session length and priority.
+- **Revision Cycles**: Logic that prioritizes older, unstudied topics to ensure balanced learning.
+
+### 📈 4. Real-Time Productivity Analytics
+- **Study Streaks**: Automated tracking of consecutive study days.
+- **Productivity Scores**: Metrics derived from user-reported session quality.
+
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+graph TD
+    A[React Dashboard] -->|JWT Auth| B[Express API Gateway]
+    B -->|Middleware| C[Auth/Logging/Errors]
+    C -->|Controllers| D[Logic Layer]
+    D -->|AI Algorithm| E[Scheduling Engine]
+    D -->|Mongoose| F[MongoDB Atlas]
+    F -->|Relational Data| G[(User/Subject/Topic/Session)]
 ```
 
-## Netlify Deployment
+---
 
-This repository deploys the frontend from the `frontend/` folder.
-- Build settings are configured in `netlify.toml`.
-- Netlify will run `npm run build` inside `frontend/` and publish `frontend/dist`.
+## 🚀 API Endpoints (RESTful)
 
-## Local Development
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Register a new student |
+| `POST` | `/api/auth/login` | Login and receive JWT |
+| `GET` | `/api/ai/plan` | Generate AI-weighted study plan |
+| `GET` | `/api/analytics/productivity` | Get streaks and scores |
 
-From the root directory:
+---
 
-1. **Install all dependencies**:
-   ```bash
-   npm run install-all
-   ```
+## 🛠️ Local Setup
 
-2. **Run both frontend and backend**:
-   ```bash
-   npm run dev
-   ```
+1. **Install**: `npm run install-all`
+2. **Configure**: Add `JWT_SECRET` and `MONGO_URI` to `backend/.env`.
+3. **Run**: `npm run dev`
 
-3. **Run separately**:
-   - Frontend: `npm run client`
-   - Backend: `npm run server`
+---
+
+*Built with ❤️ for top-tier placement opportunities.*

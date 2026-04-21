@@ -1,24 +1,16 @@
-
-import React, { useEffect } from "react";
+import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { useAuth } from "@clerk/clerk-react";
+import { AuthProvider } from "./context/AuthContext";
 
 // Pages
 import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+import NativeLogin from "./pages/NativeLogin";
 import NativeSignUp from "./pages/NativeSignUp";
 import Planner from "./pages/Planner";
 import ChatbotPage from "./pages/ChatbotPage";
 
 // Auth Protection
 import ProtectedRoute from "./components/ProtectedRoute";
-
-// FCM auto-registration
-import { registerDeviceToken } from "./utils/fcmClient";
-
-// API
-import { setCurrentClerkUserId } from "./services/api";
 
 // Styles
 import "./styles/home.css";
@@ -28,34 +20,12 @@ import "./styles/calendar.css";
 import "./styles/chatbot.css";
 
 function AppContent() {
-  const { isSignedIn, userId, isLoaded } = useAuth();
-
-  useEffect(() => {
-    console.log("🔐 Auth State:", { isLoaded, isSignedIn, userId });
-    
-    if (isLoaded && isSignedIn && userId) {
-      // Set Clerk user ID for API requests
-      setCurrentClerkUserId(userId);
-      
-      // Register this browser as an FCM notification target
-      registerDeviceToken().catch((err) => {
-        console.error("❌ FCM registration failed:", err);
-      });
-    } else if (isLoaded && !isSignedIn) {
-      // Clear user ID when logged out
-      console.log("🚪 User logged out, clearing user ID");
-      setCurrentClerkUserId(null);
-    }
-  }, [isLoaded, isSignedIn, userId]);
-
   return (
     <Routes>
-
       {/* 🌍 Public Routes */}
       <Route path="/" element={<Home />} />
-      <Route path="/login/*" element={<Login />} />
-      <Route path="/register/*" element={<Register />} />
-      <Route path="/signup-v2" element={<NativeSignUp />} />
+      <Route path="/login" element={<NativeLogin />} />
+      <Route path="/register" element={<NativeSignUp />} />
 
       {/* 🔐 Protected Routes */}
       <Route
@@ -75,21 +45,22 @@ function AppContent() {
           </ProtectedRoute>
         }
       />
-
     </Routes>
   );
 }
 
 function App() {
   return (
-    <Router
-      future={{
-        v7_startTransition: true,
-        v7_relativeSplatPath: true,
-      }}
-    >
-      <AppContent />
-    </Router>
+    <AuthProvider>
+      <Router
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
+        <AppContent />
+      </Router>
+    </AuthProvider>
   );
 }
 

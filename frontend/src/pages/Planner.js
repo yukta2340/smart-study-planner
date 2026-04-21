@@ -1,7 +1,6 @@
-
 import React, { useEffect, useState, useCallback, useRef } from "react";
-import { useLocation } from "react-router-dom";
-import { useAuth } from "@clerk/clerk-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAppAuth } from "../context/AuthContext";
 import { getTasks, notifyTaskPush } from "../services/api";
 
 // Components
@@ -22,13 +21,13 @@ function Planner() {
   const [toast, setToast] = useState(null);
   const notifiedAtRef = useRef(new Map());
   const location = useLocation();
-  const { isSignedIn, userId } = useAuth();
+  const navigate = useNavigate();
+  const { isAuthenticated, user } = useAppAuth();
 
   const notifyTask = useCallback((title, body, dedupeKey, smsPayload = null) => {
     const now = Date.now();
     const last = notifiedAtRef.current.get(dedupeKey) || 0;
 
-    // Prevent repeated notifications too frequently.
     if (now - last < 30 * 60 * 1000) return;
     notifiedAtRef.current.set(dedupeKey, now);
 
@@ -37,9 +36,7 @@ function Planner() {
     if ("Notification" in window && Notification.permission === "granted") {
       try {
         new Notification(title, { body });
-      } catch (_err) {
-        // Ignore browser notification errors and keep in-app toast.
-      }
+      } catch (_err) {}
     }
 
     if (smsPayload?.taskId && smsPayload?.alertType) {
@@ -47,28 +44,21 @@ function Planner() {
     }
   }, []);
 
-  // 📥 Fetch Tasks
   const fetchTasks = useCallback(async () => {
-    if (!isSignedIn) {
-      console.log("⏳ Not signed in yet, skipping task fetch");
-      setTasks([]);
-      return;
-    }
+    if (!isAuthenticated) return;
     
-    console.log("📥 Fetching tasks for user:", userId);
     try {
       const response = await getTasks();
-      console.log("✅ Tasks fetched successfully:", response.data.length, "tasks");
-      setTasks(response.data);
+      setTasks(response.data.data || []); // Our new helper wraps data in 'data' field
     } catch (err) {
-      console.error("❌ Error fetching tasks:", err.response?.status, err.response?.data || err.message);
-      setTasks([]); // Set to empty array on error
+      console.error("❌ Error fetching tasks:", err.message);
+      setTasks([]);
     }
-  }, [isSignedIn, userId]);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     fetchTasks();
-  }, [fetchTasks, userId]);
+  }, [fetchTasks]);
 
   useEffect(() => {
     if (!("Notification" in window)) return;
@@ -92,7 +82,7 @@ function Planner() {
         if (msLeft <= 0) {
           notifyTask(
             "Task Overdue",
-            `${task.subject} is overdue. Please complete it as soon as possible.`,
+            `${task.title} is overdue.`,
             `${task._id}-overdue`,
             { taskId: task._id, alertType: "overdue" }
           );
@@ -102,7 +92,7 @@ function Planner() {
         if (msLeft <= 60 * 60 * 1000) {
           notifyTask(
             "Task Due In 1 Hour",
-            `${task.subject} is due within the next hour.`,
+            `${task.title} is due within the hour.`,
             `${task._id}-1h`,
             { taskId: task._id, alertType: "1h" }
           );
@@ -112,7 +102,7 @@ function Planner() {
         if (msLeft <= 24 * 60 * 60 * 1000) {
           notifyTask(
             "Task Due Today",
-            `${task.subject} is due today. Keep it in focus.`,
+            `${task.title} is due today.`,
             `${task._id}-today`,
             { taskId: task._id, alertType: "today" }
           );
@@ -138,9 +128,7 @@ function Planner() {
   }, [location.hash]);
 
   return (
-    <div>
-
-      {/* Navbar */}
+    <div className="planner-page">
       <Navbar />
 
       {toast && (
@@ -151,10 +139,13 @@ function Planner() {
       )}
 
       <div className="dashboard-container">
+        <header className="planner-header">
+          <h1>Welcome, {user?.name} 👋</h1>
+          <p>Let's stay productive today.</p>
+        </header>
 
         {activeSection === "dashboard" && (
           <section id="dashboard" className="planner-section">
-            <h1 style={{ marginBottom: "24px" }}>📊 Smart Study Dashboard</h1>
             <DashboardOverview tasks={tasks} />
           </section>
         )}
@@ -177,9 +168,7 @@ function Planner() {
             <CalendarView tasks={tasks} refreshTasks={fetchTasks} />
           </section>
         )}
-
       </div>
-
     </div>
   );
 }
