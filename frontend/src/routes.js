@@ -5,12 +5,7 @@ import { Routes, Route } from "react-router-dom";
 const Home = lazy(() => import("./pages/Home"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
-const Planner = lazy(() => import("./pages/Planner"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-
-// Protected Route
-import ProtectedRoute from "./components/ProtectedRoute";
-import RoleRoute from "./components/RoleRoute";
+const SmartDashboard = lazy(() => import("./pages/SmartDashboard"));
 
 function AppRoutes() {
   return (
@@ -24,6 +19,14 @@ function AppRoutes() {
         <Route path="/register/*" element={<Register />} />
 
         {/* 🔐 Protected */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <SmartDashboard />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/planner"
           element={
