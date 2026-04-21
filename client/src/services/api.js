@@ -5,7 +5,7 @@ const isProd = import.meta.env.PROD;
 const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
 
 const runningWithoutBackend = isProd && !configuredApiUrl;
-const resolvedBaseUrl = configuredApiUrl || (isProd ? "/api" : "http://localhost:5000/api");
+const resolvedBaseUrl = configuredApiUrl || (isProd ? "https://your-backend-api.com/api" : "http://localhost:5000/api");
 
 if (isProd && !configuredApiUrl) {
   console.warn(

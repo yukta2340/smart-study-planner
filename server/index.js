@@ -52,21 +52,9 @@ app.use("/api/tasks", taskRoutes);
 app.use("/api/plans", planRoutes);
 app.use("/api/otp", otpRoutes);
 
-// 📤 Serve Static Files (Frontend)
-if (process.env.NODE_ENV === "production") {
-  const clientBuildPath = path.join(__dirname, "../client/dist");
-  app.use(express.static(clientBuildPath));
-
-  app.get("*", (req, res) => {
-    if (!req.path.startsWith("/api")) {
-      res.sendFile(path.join(clientBuildPath, "index.html"));
-    }
-  });
-} else {
-  app.get("/", (req, res) => {
-    res.json({ status: "API is running (Development)" });
-  });
-}
+app.get("/", (req, res) => {
+  res.json({ message: "Smart Study Planner API is running", version: "1.0.0" });
+});
 
 // 🛡️ Error handling
 process.on("unhandledRejection", (err) => {
