@@ -1,67 +1,88 @@
 const StudySession = require('../models/StudySession');
-const Topic = require('../models/Topic');
 const sendResponse = require('../utils/responseHelper');
+const mongoose = require('mongoose');
 
 /**
- * @desc    Performance Intelligence: Weak Topic Risk Report
- * @route   GET /api/analytics/weak-areas
- * @access  Private
+ * @desc    Get comprehensive study analytics using MongoDB Aggregation
+ * @route   GET /api/analytics/dashboard
  */
-const getWeakAreaReport = async (req, res) => {
+const getDashboardStats = async (req, res) => {
   try {
-    // 1. Fetch all user topics and sessions
-    const topics = await Topic.find({ isCompleted: false }).populate({
-      path: 'subject',
-      match: { user: req.user._id }
-    });
-    
-    const userTopics = topics.filter(t => t.subject !== null);
-    const sessions = await StudySession.find({ user: req.user._id });
+    const userId = new mongoose.Types.ObjectId(req.user._id);
 
-    // 2. Perform Detection Logic
-    const riskReport = userTopics.map(topic => {
-      const topicSessions = sessions.filter(s => s.topic.toString() === topic._id.toString());
-      
-      const totalTime = topicSessions.reduce((acc, s) => acc + s.durationMinutes, 0);
-      const avgProductivity = topicSessions.length > 0 
-        ? (topicSessions.reduce((acc, s) => acc + s.productivityScore, 0) / topicSessions.length).toFixed(1)
-        : 0;
-
-      // RISK CRITERIA:
-      // - High Difficulty (>=4) but low time (< 60 mins)
-      // - OR Low Productivity Score (< 5)
-      // - OR Zero sessions but deadline is close
-      let riskLevel = 'LOW';
-      let reason = '';
-
-      if (totalTime < 30) {
-        riskLevel = 'HIGH';
-        reason = 'Insufficient study time detected.';
-      } else if (avgProductivity > 0 && avgProductivity < 5) {
-        riskLevel = 'MEDIUM';
-        reason = 'Low productivity reported in recent sessions.';
+    // 1. Total Stats (Time, Sessions, Avg Productivity)
+    const overallStats = await StudySession.aggregate([
+      { $match: { user: userId } },
+      {
+        $group: {
+          _id: null,
+          totalMinutes: { $sum: '$durationMinutes' },
+          totalSessions: { $count: {} },
+          avgProductivity: { $avg: '$productivityScore' }
+        }
       }
+    ]);
 
-      return {
-        topic: topic.name,
-        subject: topic.subject.name,
-        totalStudyTime: `${totalTime} mins`,
-        avgProductivity,
-        riskLevel,
-        reason
-      };
+    // 2. Subject Breakdown (Which subjects get the most time?)
+    const subjectBreakdown = await StudySession.aggregate([
+      { $match: { user: userId } },
+      {
+        $lookup: {
+          from: 'topics',
+          localField: 'topic',
+          foreignField: '_id',
+          as: 'topicData'
+        }
+      },
+      { $unwind: '$topicData' },
+      {
+        $lookup: {
+          from: 'subjects',
+          localField: 'topicData.subject',
+          foreignField: '_id',
+          as: 'subjectData'
+        }
+      },
+      { $unwind: '$subjectData' },
+      {
+        $group: {
+          _id: '$subjectData.name',
+          timeSpent: { $sum: '$durationMinutes' },
+          color: { $first: '$subjectData.color' }
+        }
+      },
+      { $sort: { timeSpent: -1 } }
+    ]);
+
+    // 3. Weekly Trend (Last 7 Days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const weeklyTrend = await StudySession.aggregate([
+      { 
+        $match: { 
+          user: userId,
+          createdAt: { $gte: sevenDaysAgo }
+        } 
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          minutes: { $sum: "$durationMinutes" }
+        }
+      },
+      { $sort: { "_id": 1 } }
+    ]);
+
+    sendResponse(res, 200, 'Analytics retrieved successfully', {
+      summary: overallStats[0] || { totalMinutes: 0, totalSessions: 0, avgProductivity: 0 },
+      subjects: subjectBreakdown,
+      weeklyTrend
     });
 
-    // Filter only those that are Medium or High risk
-    const detectedWeakAreas = riskReport.filter(r => r.riskLevel !== 'LOW');
-
-    sendResponse(res, 200, 'Weak Areas Detected', {
-      count: detectedWeakAreas.length,
-      report: detectedWeakAreas
-    });
   } catch (error) {
-    sendResponse(res, 500, 'Analytics Error', error.message);
+    sendResponse(res, 500, 'Analytics Engine Error', error.message);
   }
 };
 
-module.exports = { getWeakAreaReport };
+module.exports = { getDashboardStats };

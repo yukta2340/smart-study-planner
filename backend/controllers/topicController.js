@@ -16,28 +16,34 @@ const getTopicsBySubject = async (req, res) => {
 };
 
 /**
- * @desc    Create a new topic within a subject
+ * @desc    Create a new topic with full AI metadata
  * @route   POST /api/topics
  * @access  Private
  */
 const createTopic = async (req, res) => {
   try {
-    const { subjectId, name, difficulty } = req.body;
+    const { subjectId, name, difficulty, deadline, estimatedTime } = req.body;
+
+    if (!subjectId || !name) {
+      return sendResponse(res, 400, 'Subject ID and Name are required');
+    }
 
     const topic = await Topic.create({
       subject: subjectId,
       name,
       difficulty: difficulty || 3,
+      deadline: deadline ? new Date(deadline) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Default 7 days
+      estimatedTime: estimatedTime || 60,
     });
 
-    sendResponse(res, 201, 'Topic created successfully', topic);
+    sendResponse(res, 201, 'Topic created with AI metadata', topic);
   } catch (error) {
     sendResponse(res, 500, 'Server Error', error.message);
   }
 };
 
 /**
- * @desc    Update a topic (e.g., mark as completed or change difficulty)
+ * @desc    Update a topic (Full Support for AI metrics)
  * @route   PUT /api/topics/:id
  * @access  Private
  */
@@ -49,10 +55,13 @@ const updateTopic = async (req, res) => {
       return sendResponse(res, 404, 'Topic not found');
     }
 
-    // Update fields
-    topic.name = req.body.name || topic.name;
-    topic.difficulty = req.body.difficulty || topic.difficulty;
-    topic.isCompleted = req.body.isCompleted !== undefined ? req.body.isCompleted : topic.isCompleted;
+    // Dynamic update
+    const fieldsToUpdate = ['name', 'difficulty', 'isCompleted', 'deadline', 'estimatedTime', 'isWeakTopic'];
+    fieldsToUpdate.forEach(field => {
+      if (req.body[field] !== undefined) {
+        topic[field] = req.body[field];
+      }
+    });
 
     const updatedTopic = await topic.save();
     sendResponse(res, 200, 'Topic updated successfully', updatedTopic);
