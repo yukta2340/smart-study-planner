@@ -7,6 +7,7 @@ import { useAuth } from "@clerk/clerk-react";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import NativeSignUp from "./pages/NativeSignUp";
 import Planner from "./pages/Planner";
 import ChatbotPage from "./pages/ChatbotPage";
 
@@ -54,6 +55,7 @@ function AppContent() {
       <Route path="/" element={<Home />} />
       <Route path="/login/*" element={<Login />} />
       <Route path="/register/*" element={<Register />} />
+      <Route path="/signup-v2" element={<NativeSignUp />} />
 
       {/* 🔐 Protected Routes */}
       <Route

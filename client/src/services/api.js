@@ -5,7 +5,7 @@ const isProd = import.meta.env.PROD;
 const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
 
 const runningWithoutBackend = isProd && !configuredApiUrl;
-const resolvedBaseUrl = configuredApiUrl || (isProd ? "" : "http://localhost:5000");
+const resolvedBaseUrl = configuredApiUrl || (isProd ? "/api" : "http://localhost:5000/api");
 
 if (isProd && !configuredApiUrl) {
   console.warn(
@@ -90,7 +90,7 @@ export const loginUser = (data) => {
   if (runningWithoutBackend) {
     return Promise.reject(new Error("Login API not available (frontend-only deployment)."));
   }
-  return API.post("/login", data);
+  return API.post("/users/login", data);
 };
 
 // Register
@@ -98,7 +98,7 @@ export const registerUser = (data) => {
   if (runningWithoutBackend) {
     return Promise.reject(new Error("Register API not available (frontend-only deployment)."));
   }
-  return API.post("/register", data);
+  return API.post("/users/register", data);
 };
 
 // =====================
@@ -110,7 +110,7 @@ export const sendOTP = (phone) => {
   if (runningWithoutBackend) {
     return Promise.reject(new Error("OTP is not available (frontend-only deployment)."));
   }
-  return API.post("/send-otp", { phone });
+  return API.post("/otp/send-otp", { phone });
 };
 
 // Verify OTP
@@ -118,7 +118,7 @@ export const verifyOTP = (data) => {
   if (runningWithoutBackend) {
     return Promise.reject(new Error("OTP is not available (frontend-only deployment)."));
   }
-  return API.post("/verify-otp", data);
+  return API.post("/otp/verify-otp", data);
 };
 
 // =====================
@@ -131,7 +131,7 @@ export const getTasks = () => {
     const tasks = loadTasks().sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
     return Promise.resolve({ data: tasks });
   }
-  return API.get("/tasks");
+  return API.get("/tasks/");
 };
 
 // Add task
@@ -152,7 +152,7 @@ export const addTask = (data) => {
     saveTasks(tasks);
     return Promise.resolve({ data: task });
   }
-  return API.post("/add-task", data);
+  return API.post("/tasks/add-task", data);
 };
 
 // Update task
@@ -166,7 +166,7 @@ export const updateTask = (id, data) =>
         saveTasks(tasks);
         return { data: tasks[idx] };
       })
-    : API.put(`/update-task/${id}`, data));
+    : API.put(`/tasks/update-task/${id}`, data));
 
 // Delete task
 export const deleteTask = (id) =>
@@ -176,13 +176,13 @@ export const deleteTask = (id) =>
         saveTasks(tasks);
         return { data: { ok: true } };
       })
-    : API.delete(`/delete-task/${id}`));
+    : API.delete(`/tasks/delete-task/${id}`));
 
 // Task AI assistant
 export const getTaskAssistantHelp = (data) =>
   (runningWithoutBackend
     ? Promise.reject(new Error("AI assistant is not available (frontend-only deployment)."))
-    : API.post("/task-assistant", data));
+    : API.post("/tasks/task-assistant", data));
 
 // Create task from uploaded image (OCR)
 export const uploadTaskImage = (file, completed = false) => {
@@ -193,7 +193,7 @@ export const uploadTaskImage = (file, completed = false) => {
   formData.append("taskImage", file);
   formData.append("completed", completed ? "true" : "false");
 
-  return API.post("/upload-task-image", formData, {
+  return API.post("/tasks/upload-task-image", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -209,7 +209,7 @@ export const chatWithAssistant = (data) =>
             "This deployment is frontend-only (no server). To enable AI responses, deploy the backend or connect an AI API from the client.",
         },
       })
-    : API.post("/chat-assistant", data));
+    : API.post("/tasks/chat-assistant", data));
 
 // AI dashboard suggestions
 export const getAISuggestions = () =>
@@ -223,19 +223,19 @@ export const getAISuggestions = () =>
           ],
         },
       })
-    : API.get("/ai-suggestions"));
+    : API.get("/tasks/ai-suggestions"));
 
 // Trigger push notification (FCM) for task reminder types (today, 1h, overdue)
 export const notifyTaskPush = (taskId, alertType) =>
   (runningWithoutBackend
     ? Promise.resolve({ data: { ok: true } })
-    : API.post("/notify-task-push", { taskId, alertType }));
+    : API.post("/tasks/notify-task-push", { taskId, alertType }));
 
 // Register a browser FCM device token into MongoDB
 export const registerDeviceToken = (token) =>
   (runningWithoutBackend
     ? Promise.resolve({ data: { ok: true } })
-    : API.post("/register-device-token", { token }));
+    : API.post("/tasks/register-device-token", { token }));
 
 // =====================
 // 🤖 AI PLAN API
@@ -252,6 +252,6 @@ export const generatePlan = () =>
           ],
         },
       })
-    : API.post("/generate-plan"));
+    : API.post("/plans/generate-plan"));
 
 export default API;

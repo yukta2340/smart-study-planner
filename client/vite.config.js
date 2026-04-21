@@ -31,21 +31,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      "/login": "http://localhost:5000",
-      "/register": "http://localhost:5000",
-      "/send-otp": "http://localhost:5000",
-      "/verify-otp": "http://localhost:5000",
-      "/tasks": "http://localhost:5000",
-      "/add-task": "http://localhost:5000",
-      "/update-task": "http://localhost:5000",
-      "/delete-task": "http://localhost:5000",
-      "/task-assistant": "http://localhost:5000",
-      "/upload-task-image": "http://localhost:5000",
-      "/chat-assistant": "http://localhost:5000",
-      "/ai-suggestions": "http://localhost:5000",
-      "/notify-task-push": "http://localhost:5000",
-      "/register-device-token": "http://localhost:5000",
-      "/generate-plan": "http://localhost:5000",
+      "/api": "http://localhost:5000",
     },
   },
 });

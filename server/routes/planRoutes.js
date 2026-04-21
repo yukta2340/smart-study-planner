@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const { generatePlan } = require("../controllers/planController");
 
-router.post("/generate-plan", generatePlan);
+const authMiddleware = require("../middleware/authMiddleware");
+
+router.post("/generate-plan", authMiddleware, generatePlan);
 
 module.exports = router;

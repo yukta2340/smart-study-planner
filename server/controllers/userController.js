@@ -15,6 +15,14 @@ exports.registerUser = async (req, res) => {
 
     const normalizedEmail = email.trim().toLowerCase();
 
+    // 🔐 Strong Password Validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({ 
+        error: "Password must be at least 8 characters long and include uppercase, lowercase, a digit, and a special character." 
+      });
+    }
+
     // Check existing user
     const existing = await User.findOne({ email: normalizedEmail });
     if (existing) {
