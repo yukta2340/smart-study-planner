@@ -10,9 +10,11 @@ const subjectRoutes = require('./routes/subjectRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
+const initSchedules = require('./utils/scheduler');
 
 dotenv.config();
 connectDB();
+initSchedules();
 
 const app = express();
 
