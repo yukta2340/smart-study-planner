@@ -1,0 +1,280 @@
+
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap");
+
+.home-container {
+  min-height: 100vh;
+  color: var(--text-primary);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 48px 20px;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  font-family: "Outfit", sans-serif;
+}
+
+.home-grid-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 34px 34px;
+  opacity: 0.25;
+  z-index: -2;
+}
+
+.home-glow {
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  filter: blur(85px);
+  z-index: -3;
+  pointer-events: none;
+  animation: floatGlow 7s ease-in-out infinite;
+}
+
+.home-glow-one {
+  background: rgba(64, 192, 255, 0.3);
+  top: -120px;
+  left: -90px;
+}
+
+.home-glow-two {
+  background: rgba(255, 162, 89, 0.28);
+  right: -120px;
+  bottom: -120px;
+  animation-delay: 1.2s;
+}
+
+/* Hero */
+.hero {
+  margin-bottom: 36px;
+  max-width: 940px;
+  animation: heroEnter 0.7s ease;
+}
+
+.hero-badge {
+  display: inline-block;
+  margin-bottom: 18px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #9cd8ff;
+  background: rgba(45, 105, 170, 0.25);
+  border: 1px solid rgba(131, 195, 255, 0.45);
+}
+
+.title {
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-family: "Space Grotesk", sans-serif;
+  margin-bottom: 8px;
+}
+
+.title-icon {
+  filter: drop-shadow(0 8px 14px rgba(255, 95, 162, 0.35));
+}
+
+.subtitle {
+  margin-top: 10px;
+  font-size: clamp(1.02rem, 2vw, 1.4rem);
+  font-weight: 600;
+  color: #d7edff;
+}
+
+.hero-subline {
+  margin: 14px auto 0;
+  max-width: 720px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* Buttons */
+.buttons {
+  margin-top: 18px;
+}
+
+.buttons button {
+  margin: 15px;
+  padding: 13px 26px;
+  border: none;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #1ea8ff, #2272ff);
+  color: white;
+  cursor: pointer;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 600;
+  box-shadow: 0 10px 22px rgba(30, 136, 255, 0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.buttons button:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 16px 30px rgba(30, 136, 255, 0.45);
+}
+
+.secondary {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border: 1px solid rgba(148, 218, 255, 0.6) !important;
+  color: #d6f3ff !important;
+  box-shadow: none !important;
+}
+
+.hero-stats {
+  margin: 16px auto 0;
+  max-width: 620px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.hero-stat {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hero-stat-value {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.hero-stat-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Features */
+.features {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 240px));
+  justify-content: center;
+  gap: 16px;
+  width: min(980px, 100%);
+}
+
+.feature-card {
+  padding: 22px 18px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06));
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.2);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: cardRise 0.8s ease both;
+}
+
+.feature-card:nth-child(2) { animation-delay: 0.08s; }
+.feature-card:nth-child(3) { animation-delay: 0.16s; }
+
+.feature-icon {
+  margin: 0 auto 10px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 21px;
+  background: rgba(22, 142, 235, 0.22);
+  border: 1px solid rgba(128, 208, 255, 0.5);
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 14px 24px rgba(0, 0, 0, 0.2);
+}
+
+.feature-card h3 {
+  margin: 0;
+  font-size: 1.08rem;
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--text-primary);
+}
+
+.feature-card p {
+  font-size: 0.95rem;
+  margin-top: 10px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+@keyframes floatGlow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-18px); }
+}
+
+@keyframes heroEnter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cardRise {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.light .hero-badge {
+  color: #0f4b7a;
+  background: rgba(108, 181, 255, 0.2);
+  border-color: rgba(72, 149, 227, 0.45);
+}
+
+.light .subtitle {
+  color: #1e4c74;
+}
+
+.light .secondary {
+  background: rgba(26, 67, 112, 0.06) !important;
+  border-color: rgba(33, 100, 164, 0.45) !important;
+  color: #1f5b92 !important;
+}
+
+@media (max-width: 900px) {
+  .features {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+    max-width: 620px;
+  }
+
+  .hero-stats {
+    grid-template-columns: 1fr;
+    max-width: 320px;
+  }
+}
+
+@media (max-width: 640px) {
+  .title {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .buttons button {
+    display: block;
+    width: min(280px, 92%);
+    margin: 10px auto;
+  }
+
+  .features {
+    grid-template-columns: 1fr;
+    max-width: 340px;
+  }
+}

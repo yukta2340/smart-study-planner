@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
-    "client-dev": "cd client && npm run dev",
-    "server-dev": "cd server && npm run dev",
+    "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "client-dev": "cd frontend && npm run dev",
+    "server-dev": "cd backend && npm run dev",
     "dev": "concurrently \"npm run server-dev\" \"npm run client-dev\"",
-    "build-client": "cd client && npm run build",
-    "start": "cd server && npm start",
+    "build-client": "cd frontend && npm run build",
+    "start": "cd backend && npm start",
     "heroku-postbuild": "npm run build-client"
   },
   "devDependencies": {
