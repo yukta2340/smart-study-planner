@@ -15,9 +15,13 @@ const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
+if (!clerkPubKey) {
+  console.error("Missing VITE_CLERK_PUBLISHABLE_KEY. Add it to your environment variables.");
+}
+
 root.render(
   <React.StrictMode>
-    <ClerkProvider publishableKey={clerkPubKey}>
+    <ClerkProvider publishableKey={clerkPubKey || ""}>
       <ThemeProvider>
         <App />
       </ThemeProvider>

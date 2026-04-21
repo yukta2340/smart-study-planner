@@ -46,6 +46,7 @@ function getFirebaseMessaging() {
  */
 export async function registerDeviceToken() {
   try {
+    const apiUrlConfigured = Boolean(import.meta.env.VITE_API_URL?.trim());
     if (!("Notification" in window) || !("serviceWorker" in navigator)) {
       console.warn("[FCM] Browser does not support notifications or service workers.");
       return null;
@@ -77,9 +78,13 @@ export async function registerDeviceToken() {
       return null;
     }
 
-    // Persist to backend (upsert — safe to call repeatedly)
-    await API.post("/register-device-token", { token });
-    console.info("[FCM] Device token registered:", token.slice(0, 20) + "...");
+    if (apiUrlConfigured) {
+      // Persist to backend (upsert — safe to call repeatedly)
+      await API.post("/register-device-token", { token });
+      console.info("[FCM] Device token registered:", token.slice(0, 20) + "...");
+    } else {
+      console.info("[FCM] Token acquired (frontend-only mode):", token.slice(0, 20) + "...");
+    }
     return token;
   } catch (err) {
     console.error("[FCM] Device token registration failed:", err.message);
