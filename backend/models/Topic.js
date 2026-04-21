@@ -18,6 +18,10 @@ const topicSchema = mongoose.Schema(
       max: 5,
       default: 3,
     },
+    deadline: {
+      type: Date,
+      default: Date.now,
+    },
     isCompleted: {
       type: Boolean,
       default: false,
