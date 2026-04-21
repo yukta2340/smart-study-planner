@@ -1,45 +1,29 @@
 # smart-study-planner
 
-## Hassle-free Netlify deployment
+## Netlify Deployment
 
-This repository deploys the frontend from the `client` folder.
+This repository contains the frontend application at the root level.
 
-### 1) Deploy frontend on Netlify
+### 1) Deploy on Netlify
 
-- Build settings are already configured in `netlify.toml`.
-- Netlify will run build in `client` and publish `client/dist`.
+- Build settings are configured in `netlify.toml`.
+- Netlify will run `npm run build` at the root and publish the `dist` folder.
 
-### 2) Frontend-only mode (no backend)
+### 2) Frontend-only mode
 
-This project can run without deploying `client/server`.
+This project runs in frontend-only mode by default:
+- Tasks are stored in the browser using `localStorage`.
+- AI suggestions and some other features are provided via local mock data or placeholders when a backend is not connected.
 
-- Tasks are stored in the browser using `localStorage` (per signed-in Clerk user id, or `anon`).
-- Server-only features are disabled in this mode:
-  - OTP login APIs
-  - OCR image upload
-  - Server-powered AI suggestions/chat
-  - Storing FCM tokens in MongoDB / sending server push/SMS hooks
-
-### 3) Configure frontend environment variables (Netlify)
+### 3) Configuration
 
 Set these in Netlify Site settings -> Environment variables:
-
 - `VITE_CLERK_PUBLISHABLE_KEY` (required for sign-in)
-- Firebase client keys used by `client/src/utils/fcmClient.js` (optional; only needed if you want web push)
+- `VITE_API_URL` (Optional: set this if you have a separate backend deployed)
 
-You can copy variable names from `client/.env.example`.
+### 4) Local Development
 
-### 4) Optional: enable a real backend later
-
-Deploy `client/server` separately (Render/Railway/etc.) and set backend env vars from:
-
-- `client/server/.env.example`
-
-Then set:
-
-- `VITE_API_URL` = your deployed backend URL
-
-### 5) Why the old errors happened
-
-- `503` usually means the deployed app could not serve an API request (wrong URL or backend unavailable).
-- Browser console `runtime.lastError` message-port errors are commonly from browser extensions, not app code.
+```bash
+npm install
+npm run dev
+```
