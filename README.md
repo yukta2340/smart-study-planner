@@ -1,29 +1,33 @@
 # smart-study-planner
 
+## Project Structure
+
+```text
+smart-study-planner/
+├── frontend/        # React/Vite frontend app
+└── backend/         # Node.js/Express backend app
+```
+
 ## Netlify Deployment
 
-This repository contains the frontend application at the root level.
-
-### 1) Deploy on Netlify
-
+This repository deploys the frontend from the `frontend/` folder.
 - Build settings are configured in `netlify.toml`.
-- Netlify will run `npm run build` at the root and publish the `dist` folder.
+- Netlify will run `npm run build` inside `frontend/` and publish `frontend/dist`.
 
-### 2) Frontend-only mode
+## Local Development
 
-This project runs in frontend-only mode by default:
-- Tasks are stored in the browser using `localStorage`.
-- AI suggestions and some other features are provided via local mock data or placeholders when a backend is not connected.
+From the root directory:
 
-### 3) Configuration
+1. **Install all dependencies**:
+   ```bash
+   npm run install-all
+   ```
 
-Set these in Netlify Site settings -> Environment variables:
-- `VITE_CLERK_PUBLISHABLE_KEY` (required for sign-in)
-- `VITE_API_URL` (Optional: set this if you have a separate backend deployed)
+2. **Run both frontend and backend**:
+   ```bash
+   npm run dev
+   ```
 
-### 4) Local Development
-
-```bash
-npm install
-npm run dev
-```
+3. **Run separately**:
+   - Frontend: `npm run client`
+   - Backend: `npm run server`
