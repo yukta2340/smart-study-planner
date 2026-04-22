@@ -6,13 +6,17 @@ const Home = lazy(() => import("./pages/Home"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const SmartDashboard = lazy(() => import("./pages/SmartDashboard"));
+const Planner = lazy(() => import("./pages/Planner"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Protected Route components
+import ProtectedRoute from "./components/ProtectedRoute";
+import RoleRoute from "./components/RoleRoute";
 
 function AppRoutes() {
   return (
     <Suspense fallback={<div className="loader">Loading...</div>}>
-
       <Routes>
-
         {/* 🌍 Public */}
         <Route path="/" element={<Home />} />
         <Route path="/login/*" element={<Login />} />
@@ -36,7 +40,7 @@ function AppRoutes() {
           }
         />
 
-        {/* 👑 Role-based (example admin route) */}
+        {/* 👑 Role-based */}
         <Route
           path="/admin"
           element={
@@ -48,9 +52,7 @@ function AppRoutes() {
 
         {/* ❌ 404 */}
         <Route path="*" element={<NotFound />} />
-
       </Routes>
-
     </Suspense>
   );
 }

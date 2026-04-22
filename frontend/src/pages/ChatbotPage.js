@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useAuth } from "@clerk/clerk-react";
+import { useAppAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import TaskAssistantChat from "../components/TaskAssistantChat";
 import { getTasks } from "../services/api";
@@ -9,21 +9,23 @@ import "../styles/chatbot.css";
 
 function ChatbotPage() {
   const [tasks, setTasks] = useState([]);
-  const { isSignedIn, userId } = useAuth();
+  const { isAuthenticated, user } = useAppAuth();
 
   useEffect(() => {
     const fetchTasks = async () => {
-      if (!isSignedIn) {
-        console.log("⏳ Not signed in yet, skipping task fetch in ChatbotPage");
+      if (!isAuthenticated) {
+        console.log("⏳ Not authenticated yet, skipping task fetch in ChatbotPage");
         setTasks([]);
         return;
       }
 
-      console.log("📥 Fetching tasks in ChatbotPage for user:", userId);
+      console.log("📥 Fetching tasks in ChatbotPage for user:", user?._id);
       try {
         const response = await getTasks();
-        console.log("✅ Tasks fetched in ChatbotPage:", response.data.length, "tasks");
-        setTasks(response.data);
+        // Handle standardized response structure
+        const tasksData = response.data?.data || response.data || [];
+        console.log("✅ Tasks fetched in ChatbotPage:", tasksData.length, "tasks");
+        setTasks(tasksData);
       } catch (err) {
         console.error("❌ Error fetching tasks in ChatbotPage:", err.response?.status, err.response?.data || err.message);
         setTasks([]);
@@ -31,7 +33,7 @@ function ChatbotPage() {
     };
 
     fetchTasks();
-  }, [isSignedIn, userId]);
+  }, [isAuthenticated, user]);
 
   return (
     <div>

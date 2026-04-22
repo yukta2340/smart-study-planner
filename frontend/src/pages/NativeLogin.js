@@ -18,7 +18,7 @@ function NativeLogin() {
     
     try {
       await login(email, password);
-      navigate("/planner");
+      navigate("/dashboard");
     } catch (err) {
       setError(err.response?.data?.message || "Login failed. Check your credentials.");
     } finally {

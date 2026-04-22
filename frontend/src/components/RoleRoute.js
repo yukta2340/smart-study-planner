@@ -1,15 +1,13 @@
-
-import { useContext } from "react";
+import React from "react";
 import { Navigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import { useAppAuth } from "../context/AuthContext";
 
 function RoleRoute({ children, role }) {
-  const { user } = useContext(AuthContext);
+  const { user, isAuthenticated } = useAppAuth();
 
-  // Example: user.role should exist
-  if (!user) return <Navigate to="/login" />;
+  if (!isAuthenticated) return <Navigate to="/login" />;
 
-  if (user.role !== role) {
+  if (user && user.role !== role) {
     return <Navigate to="/" />;
   }
 

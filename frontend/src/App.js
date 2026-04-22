@@ -8,6 +8,7 @@ import NativeLogin from "./pages/NativeLogin";
 import NativeSignUp from "./pages/NativeSignUp";
 import Planner from "./pages/Planner";
 import ChatbotPage from "./pages/ChatbotPage";
+import SmartDashboard from "./pages/SmartDashboard";
 
 // Auth Protection
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -28,6 +29,15 @@ function AppContent() {
       <Route path="/register" element={<NativeSignUp />} />
 
       {/* 🔐 Protected Routes */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <SmartDashboard />
+          </ProtectedRoute>
+        }
+      />
+      
       <Route
         path="/planner"
         element={
@@ -52,12 +62,7 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <Router
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      >
+      <Router>
         <AppContent />
       </Router>
     </AuthProvider>

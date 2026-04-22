@@ -27,7 +27,7 @@ function Navbar() {
         <button
           type="button"
           className="nav-link-btn"
-          onClick={() => handleSectionNavigate("dashboard")}
+          onClick={() => navigate("/dashboard")}
         >
           Dashboard
         </button>

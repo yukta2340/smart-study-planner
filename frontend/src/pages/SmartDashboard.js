@@ -5,8 +5,7 @@ import {
 } from 'recharts';
 import { motion } from 'framer-motion';
 import { 
-  Flame, Trophy, Target, BookOpen, Clock, 
-  ChevronRight, Brain, Zap, AlertCircle 
+  Flame, Trophy, Target, Brain, Zap, Clock, ChevronRight
 } from 'lucide-react';
 import { getDashboardStats, getWeeklyRoadmap } from '../services/api';
 import '../styles/Dashboard.css';
@@ -25,29 +24,22 @@ const SmartDashboard = () => {
           getDashboardStats(),
           getWeeklyRoadmap()
         ]);
-        setStats(statsRes.data.data);
-        setRoadmap(roadmapRes.data.data.roadmap);
+        
+        // Defensive checks for data structure
+        const dashboardData = statsRes?.data?.data || null;
+        const roadmapData = roadmapRes?.data?.data?.roadmap || [];
+        
+        setStats(dashboardData);
+        setRoadmap(roadmapData);
       } catch (err) {
         console.error("Dashboard Load Error:", err);
-        // Fallback dummy data for "WOW" factor if API fails or is empty
+        // Fallback dummy data
         setStats({
-          summary: { totalMinutes: 1240, totalSessions: 24, avgProductivity: 88 },
-          subjects: [
-            { _id: 'Mathematics', timeSpent: 450 },
-            { _id: 'DBMS', timeSpent: 320 },
-            { _id: 'OS', timeSpent: 280 },
-            { _id: 'Algorithms', timeSpent: 190 }
-          ],
-          weeklyTrend: [
-            { _id: 'Mon', minutes: 120 },
-            { _id: 'Tue', minutes: 240 },
-            { _id: 'Wed', minutes: 180 },
-            { _id: 'Thu', minutes: 300 },
-            { _id: 'Fri', minutes: 150 },
-            { _id: 'Sat', minutes: 200 },
-            { _id: 'Sun', minutes: 50 }
-          ]
+          summary: { totalMinutes: 120, totalSessions: 5, avgProductivity: 7.5 },
+          subjects: [{ _id: 'Study', timeSpent: 120 }],
+          weeklyTrend: [{ _id: 'Today', minutes: 120 }]
         });
+        setRoadmap([]);
       } finally {
         setLoading(false);
       }
@@ -56,36 +48,38 @@ const SmartDashboard = () => {
   }, []);
 
   if (loading) return <div className="dashboard-container">Loading Intelligence...</div>;
+  if (!stats) return <div className="dashboard-container">Error loading dashboard stats.</div>;
 
   return (
     <div className="dashboard-container">
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
+        style={{ marginBottom: '2rem' }}
       >
-        <h1 className="text-4xl font-bold mb-2">Welcome back, <span className="text-gradient">Scholar</span></h1>
-        <p className="text-text-dim">Your AI has optimized 7 days of study based on your performance.</p>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>
+          Welcome back, <span className="text-gradient">Scholar</span>
+        </h1>
+        <p style={{ color: '#94a3b8' }}>Your AI has optimized 7 days of study based on your performance.</p>
       </motion.header>
 
-      {/* 🚀 Top Stats Grid */}
       <div className="stat-grid">
         <StatCard 
-          icon={<Flame className="text-orange-500" />} 
+          icon={<Flame color="#f97316" />} 
           label="Current Streak" 
           value="12 Days" 
           subText="Top 5% of Students"
           delay={0.1}
         />
         <StatCard 
-          icon={<Trophy className="text-yellow-500" />} 
+          icon={<Trophy color="#eab308" />} 
           label="Knowledge Level" 
           value="Lvl 14" 
           progress={75}
           delay={0.2}
         />
         <StatCard 
-          icon={<Target className="text-accent" />} 
+          icon={<Target color="#ec4899" />} 
           label="Today's Goal" 
           value="360 min" 
           subText="4 Sessions Scheduled"
@@ -93,7 +87,6 @@ const SmartDashboard = () => {
         />
       </div>
 
-      {/* 📊 Charts Section */}
       <div className="chart-grid">
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
@@ -101,22 +94,18 @@ const SmartDashboard = () => {
           transition={{ delay: 0.4 }}
           className="glass-card"
         >
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-semibold flex items-center gap-2">
-              <Zap size={20} className="text-primary" /> Weekly Productivity
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 'semibold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Zap size={20} color="#6366f1" /> Weekly Productivity
             </h3>
-            <span className="text-xs text-text-dim">Time Spent (Minutes)</span>
           </div>
           <div style={{ width: '100%', height: 300 }}>
             <ResponsiveContainer>
-              <BarChart data={stats.weeklyTrend}>
+              <BarChart data={stats.weeklyTrend || []}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                <XAxis dataKey="_id" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip 
-                  cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                  contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px' }}
-                />
+                <XAxis dataKey="_id" stroke="#94a3b8" fontSize={12} />
+                <YAxis stroke="#94a3b8" fontSize={12} />
+                <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none' }} />
                 <Bar dataKey="minutes" fill="#6366f1" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -129,59 +118,50 @@ const SmartDashboard = () => {
           transition={{ delay: 0.5 }}
           className="glass-card"
         >
-          <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
-            <Brain size={20} className="text-secondary" /> Focus Distribution
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 'semibold', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Brain size={20} color="#a855f7" /> Focus Areas
           </h3>
           <div style={{ width: '100%', height: 300 }}>
             <ResponsiveContainer>
               <PieChart>
                 <Pie
-                  data={stats.subjects}
+                  data={stats.subjects || []}
                   innerRadius={60}
                   outerRadius={80}
                   paddingAngle={5}
                   dataKey="timeSpent"
                   nameKey="_id"
                 >
-                  {stats.subjects.map((entry, index) => (
+                  {(stats.subjects || []).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip />
-                <Legend iconType="circle" />
               </PieChart>
             </ResponsiveContainer>
           </div>
         </motion.div>
       </div>
 
-      {/* 📅 AI Roadmap Section */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
         className="glass-card"
       >
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-semibold flex items-center gap-2">
-            <Clock size={20} className="text-accent" /> Smart Weekly Forecast
-          </h3>
-          <button className="text-primary text-sm font-medium hover:underline flex items-center">
-            Full Roadmap <ChevronRight size={16} />
-          </button>
-        </div>
-        
+        <h3 style={{ fontSize: '1.25rem', fontWeight: 'semibold', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Clock size={20} color="#ec4899" /> AI Smart Roadmap
+        </h3>
         <div className="roadmap-list">
-          {roadmap.slice(0, 3).map((day, idx) => (
+          {(roadmap || []).slice(0, 3).map((day, idx) => (
             <div key={idx} className="roadmap-item">
               <div>
-                <span className="text-sm font-bold text-primary">{day.date}</span>
-                <div className="text-lg font-medium">{day.status}</div>
+                <span style={{ fontSize: '0.875rem', fontWeight: 'bold', color: '#6366f1' }}>{day.date}</span>
+                <div style={{ fontSize: '1.125rem', fontWeight: 'medium' }}>{day.status}</div>
               </div>
-              <div className="text-right">
-                <div className="text-sm text-text-dim">{day.sessions.length} Sessions</div>
-                <div className="text-xs font-mono">{360 - day.remainingMins}m / 360m</div>
-                <div className="progress-bar w-32">
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '0.875rem', color: '#94a3b8' }}>{day.sessions?.length || 0} Sessions</div>
+                <div className="progress-bar" style={{ width: '100px' }}>
                   <div className="progress-fill" style={{ width: `${((360 - day.remainingMins) / 360) * 100}%` }}></div>
                 </div>
               </div>
@@ -200,11 +180,11 @@ const StatCard = ({ icon, label, value, subText, progress, delay }) => (
     transition={{ delay }}
     className="glass-card"
   >
-    <div className="flex items-center gap-4 mb-4">
-      <div className="p-3 rounded-xl bg-white/5">{icon}</div>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+      <div style={{ padding: '0.75rem', borderRadius: '0.75rem', backgroundColor: 'rgba(255,255,255,0.05)' }}>{icon}</div>
       <div>
-        <div className="text-text-dim text-sm">{label}</div>
-        <div className="text-2xl font-bold">{value}</div>
+        <div style={{ color: '#94a3b8', fontSize: '0.875rem' }}>{label}</div>
+        <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{value}</div>
       </div>
     </div>
     {progress && (
@@ -212,7 +192,7 @@ const StatCard = ({ icon, label, value, subText, progress, delay }) => (
         <div className="progress-fill" style={{ width: `${progress}%` }}></div>
       </div>
     )}
-    {subText && <div className="text-xs text-text-dim mt-2">{subText}</div>}
+    {subText && <div style={{ color: '#94a3b8', fontSize: '0.75rem', marginTop: '0.5rem' }}>{subText}</div>}
   </motion.div>
 );
 
