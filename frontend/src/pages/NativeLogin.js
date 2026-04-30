@@ -41,7 +41,7 @@ function NativeLogin() {
               type="email"
               required
               className="auth-input"
-              style={{ width: "100%", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid #d1d5db", fontSize: "1rem" }}
+              style={{ width: "100%", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid #d1d5db", fontSize: "1rem", color: "#111827", backgroundColor: "#ffffff", caretColor: "#111827" }}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="student@example.com"
@@ -54,7 +54,7 @@ function NativeLogin() {
               type="password"
               required
               className="auth-input"
-              style={{ width: "100%", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid #d1d5db", fontSize: "1rem" }}
+              style={{ width: "100%", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid #d1d5db", fontSize: "1rem", color: "#111827", backgroundColor: "#ffffff", caretColor: "#111827" }}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"

@@ -3,8 +3,16 @@ import axios from "axios";
 const isProd = import.meta.env.PROD;
 const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
 
+const normalizeApiBaseUrl = (url) => {
+  if (!url) return "";
+  const cleaned = url.replace(/\/+$/, "");
+  return cleaned.endsWith("/api") ? cleaned : `${cleaned}/api`;
+};
+
 const runningWithoutBackend = isProd && !configuredApiUrl;
-const resolvedBaseUrl = configuredApiUrl || (isProd ? "https://your-backend-api.com/api" : "http://localhost:5000/api");
+const resolvedBaseUrl = configuredApiUrl
+  ? normalizeApiBaseUrl(configuredApiUrl)
+  : (isProd ? "https://your-backend-api.com/api" : "http://localhost:5000/api");
 
 if (isProd && !configuredApiUrl) {
   console.warn(
@@ -52,9 +60,11 @@ export const deleteTopic = (id) => API.delete(`/topics/${id}`);
 // =====================
 // Get the 7-Day Smart Roadmap (Normalized, Adaptive, Session-Split)
 export const getWeeklyRoadmap = () => API.get("/ai/weekly-roadmap");
+export const getAISuggestions = () => API.get("/ai/weekly-roadmap");
 
 // Record Feedback for the Learning Loop
 export const recordAIFeedback = (topicId, rating) => API.post("/ai/feedback", { topicId, rating });
+export const chatWithAssistant = (data) => API.post("/ai/chat", data);
 
 // =====================
 // 📊 ANALYTICS APIs
@@ -69,5 +79,19 @@ export const getTasks = () => API.get("/tasks/");
 export const addTask = (data) => API.post("/tasks/add-task", data);
 export const updateTask = (id, data) => API.put(`/tasks/update-task/${id}`, data);
 export const deleteTask = (id) => API.delete(`/tasks/delete-task/${id}`);
+export const notifyTaskPush = (taskId, alertType) =>
+  API.post("/tasks/notify", { taskId, alertType });
+export const uploadTaskImage = (file, markAsCompleted = false) => {
+  const formData = new FormData();
+  formData.append("image", file);
+  formData.append("markAsCompleted", String(markAsCompleted));
+  return API.post("/tasks/upload-image", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+};
+
+// OTP endpoints (optional feature in UI)
+export const sendOTP = (phone) => API.post("/otp/send", { phone });
+export const verifyOTP = (payload) => API.post("/otp/verify", payload);
 
 export default API;

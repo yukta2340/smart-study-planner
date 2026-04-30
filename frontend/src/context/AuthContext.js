@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { loginUser as loginApi } from '../services/api';
+import { loginUser as loginApi, registerUser as registerApi } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -10,14 +10,35 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      }
     }
     setLoading(false);
   }, []);
 
   const login = async (email, password) => {
     try {
-      const { data } = await loginApi({ email, password });
+      const { data } = await loginApi({ email: email.trim().toLowerCase(), password });
+      setUser(data);
+      localStorage.setItem('user', JSON.stringify(data));
+      localStorage.setItem('token', data.token);
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const register = async ({ name, email, password }) => {
+    try {
+      const { data } = await registerApi({
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        password,
+      });
       setUser(data);
       localStorage.setItem('user', JSON.stringify(data));
       localStorage.setItem('token', data.token);
@@ -34,7 +55,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );

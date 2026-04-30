@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-import { registerUser } from "../services/api";
 import PasswordStrengthMeter from "../components/PasswordStrengthMeter";
 import { useNavigate } from "react-router-dom";
+import { useAppAuth } from "../context/AuthContext";
 
 function NativeSignUp() {
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { register } = useAppAuth();
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -15,11 +16,10 @@ function NativeSignUp() {
     setLoading(true);
 
     try {
-      await registerUser(formData);
-      alert("Registration successful! You can now log in.");
-      navigate("/login");
+      await register(formData);
+      navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.error || "Registration failed. Please check your inputs.");
+      setError(err.response?.data?.message || "Registration failed. Please check your inputs.");
     } finally {
       setLoading(false);
     }
@@ -39,7 +39,7 @@ function NativeSignUp() {
             <input
               type="text"
               required
-              style={{ width: "100%", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid #d1d5db", fontSize: "1rem" }}
+              style={{ width: "100%", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid #d1d5db", fontSize: "1rem", color: "#111827", backgroundColor: "#ffffff", caretColor: "#111827" }}
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Enter your name"
@@ -51,7 +51,7 @@ function NativeSignUp() {
             <input
               type="email"
               required
-              style={{ width: "100%", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid #d1d5db", fontSize: "1rem" }}
+              style={{ width: "100%", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid #d1d5db", fontSize: "1rem", color: "#111827", backgroundColor: "#ffffff", caretColor: "#111827" }}
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="student@example.com"
@@ -63,7 +63,7 @@ function NativeSignUp() {
             <input
               type="password"
               required
-              style={{ width: "100%", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid #d1d5db", fontSize: "1rem" }}
+              style={{ width: "100%", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid #d1d5db", fontSize: "1rem", color: "#111827", backgroundColor: "#ffffff", caretColor: "#111827" }}
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               placeholder="••••••••"

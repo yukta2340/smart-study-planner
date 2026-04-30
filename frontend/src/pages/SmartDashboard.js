@@ -4,15 +4,18 @@ import {
   PieChart, Pie, Cell, Legend 
 } from 'recharts';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { 
   Flame, Trophy, Target, Brain, Zap, Clock, ChevronRight
 } from 'lucide-react';
 import { getDashboardStats, getWeeklyRoadmap } from '../services/api';
+import Navbar from '../components/Navbar';
 import '../styles/Dashboard.css';
 
 const COLORS = ['#6366f1', '#a855f7', '#ec4899', '#f59e0b', '#10b981'];
 
 const SmartDashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [roadmap, setRoadmap] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,7 +54,35 @@ const SmartDashboard = () => {
   if (!stats) return <div className="dashboard-container">Error loading dashboard stats.</div>;
 
   return (
-    <div className="dashboard-container">
+    <div className="planner-page">
+      <Navbar />
+      <div className="dashboard-container">
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        style={{
+          display: 'flex',
+          gap: '0.75rem',
+          flexWrap: 'wrap',
+          marginBottom: '1.25rem'
+        }}
+      >
+        <button className="nav-link-btn" type="button" onClick={() => navigate('/dashboard')}>
+          Dashboard
+        </button>
+        <button className="nav-link-btn" type="button" onClick={() => navigate('/planner#tasks')}>
+          Tasks
+        </button>
+        <button className="nav-link-btn" type="button" onClick={() => navigate('/planner#progress')}>
+          Progress
+        </button>
+        <button className="nav-link-btn" type="button" onClick={() => navigate('/planner#calendar')}>
+          Calendar
+        </button>
+        <button className="nav-link-btn" type="button" onClick={() => navigate('/chatbot')}>
+          AI Coach
+        </button>
+      </motion.div>
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -169,6 +200,7 @@ const SmartDashboard = () => {
           ))}
         </div>
       </motion.div>
+      </div>
     </div>
   );
 };
