@@ -91,7 +91,10 @@ export const uploadTaskImage = (file, markAsCompleted = false) => {
 };
 
 // OTP endpoints (optional feature in UI)
-export const sendOTP = (phone) => API.post("/otp/send", { phone });
+export const sendOTP = (email) => API.post("/otp/send", { email });
 export const verifyOTP = (payload) => API.post("/otp/verify", payload);
+
+// Email verification
+export const verifyEmailAPI = (token) => API.get(`/auth/verify-email?token=${token}`);
 
 export default API;

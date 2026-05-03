@@ -61,9 +61,11 @@ function Navbar() {
         </button>
 
         <button type="button" className="theme-toggle" onClick={toggleTheme}>🌗</button>
-        
+
         <div className="user-section">
-          <span className="user-name">{user?.name}</span>
+          <span className="user-name">
+            {user?.fullName || user?.firstName || user?.name || user?.primaryEmailAddress?.emailAddress || user?.emailAddresses?.[0]?.emailAddress}
+          </span>
           <button type="button" className="logout" onClick={handleLogout}>Logout</button>
         </div>
       </div>

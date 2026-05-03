@@ -15,7 +15,8 @@
     "bcryptjs": "^2.4.3",
     "morgan": "^1.10.0",
     "node-cron": "^3.0.3",
-    "nodemailer": "^6.9.7"
+    "nodemailer": "^6.9.7",
+    "@clerk/clerk-sdk-node": "^5.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

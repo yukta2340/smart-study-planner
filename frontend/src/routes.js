@@ -4,7 +4,8 @@ import { Routes, Route } from "react-router-dom";
 // Lazy load pages
 const Home = lazy(() => import("./pages/Home"));
 const Login = lazy(() => import("./pages/Login"));
-const Register = lazy(() => import("./pages/Register"));
+const Register = lazy(() => import("./pages/NativeRegister"));
+const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 const SmartDashboard = lazy(() => import("./pages/SmartDashboard"));
 const Planner = lazy(() => import("./pages/Planner"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -21,6 +22,7 @@ function AppRoutes() {
         <Route path="/" element={<Home />} />
         <Route path="/login/*" element={<Login />} />
         <Route path="/register/*" element={<Register />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
 
         {/* 🔐 Protected */}
         <Route

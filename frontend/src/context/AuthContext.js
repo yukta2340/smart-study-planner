@@ -1,29 +1,38 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { useAuth, useUser, useClerk } from '@clerk/clerk-react';
 import { loginUser as loginApi, registerUser as registerApi } from '../services/api';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const { isLoaded, isSignedIn, getToken } = useAuth();
+  const { user } = useUser();
+  const { signOut } = useClerk();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-      }
-    }
+    if (!isLoaded) return;
+
     setLoading(false);
-  }, []);
+
+    if (isSignedIn) {
+      getToken()
+        .then((token) => {
+          if (token) {
+            localStorage.setItem('token', token);
+          }
+        })
+        .catch(() => {
+          localStorage.removeItem('token');
+        });
+    } else {
+      localStorage.removeItem('token');
+    }
+  }, [isLoaded, isSignedIn, getToken]);
 
   const login = async (email, password) => {
     try {
       const { data } = await loginApi({ email: email.trim().toLowerCase(), password });
-      setUser(data);
       localStorage.setItem('user', JSON.stringify(data));
       localStorage.setItem('token', data.token);
       return data;
@@ -39,7 +48,6 @@ export const AuthProvider = ({ children }) => {
         email: email.trim().toLowerCase(),
         password,
       });
-      setUser(data);
       localStorage.setItem('user', JSON.stringify(data));
       localStorage.setItem('token', data.token);
       return data;
@@ -48,14 +56,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    setUser(null);
+  const logout = async () => {
+    await signOut();
     localStorage.removeItem('user');
     localStorage.removeItem('token');
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading, isAuthenticated: !!user }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        register,
+        logout,
+        loading,
+        isAuthenticated: Boolean(isSignedIn),
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

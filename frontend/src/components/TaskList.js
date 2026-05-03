@@ -1,23 +1,51 @@
 import React from "react";
 import { updateTask, deleteTask } from "../services/api";
 
-function TaskList({ tasks = [], refreshTasks }) {
+function getPriorityBadge(priority) {
+  if (!priority) return null;
+  const p = priority.toLowerCase();
+  if (p === "high") return <span className="badge badge-high">High</span>;
+  if (p === "medium") return <span className="badge badge-medium">Medium</span>;
+  if (p === "low") return <span className="badge badge-low">Low</span>;
+  return null;
+}
+function getStatusBadge(status) {
+  if (!status) return null;
+  const s = status.toLowerCase();
+  if (s === "pending") return <span className="badge badge-pending">Pending</span>;
+  if (s === "in progress") return <span className="badge badge-inprogress">In Progress</span>;
+  if (s === "completed") return <span className="badge badge-completed">Completed</span>;
+  return null;
+}
 
-  // ✅ Toggle Complete Status
+function formatDue(task) {
+  if (task.completed && task.completedAt) {
+    return `Completed on ${new Date(task.completedAt).toLocaleDateString()}`;
+  }
+  if (!task.deadline) return "No due date";
+  const due = new Date(task.deadline);
+  const now = new Date();
+  const isToday = due.toDateString() === now.toDateString();
+  if (isToday) return `Due: Today, ${due.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  return `Due: ${due.toLocaleDateString([], { month: 'short', day: 'numeric' })}, ${due.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+}
+
+function TaskList({ tasks = [], refreshTasks }) {
+  // Toggle Complete Status
   const handleToggle = async (task) => {
     try {
       await updateTask(task._id, { completed: !task.completed });
-      refreshTasks(); // 🔥 refresh UI
+      refreshTasks();
     } catch (error) {
       console.error("Error updating task:", error);
     }
   };
 
-  // ❌ Delete Task
+  // Delete Task
   const handleDelete = async (id) => {
     try {
       await deleteTask(id);
-      refreshTasks(); // 🔥 refresh UI
+      refreshTasks();
     } catch (error) {
       console.error("Error deleting task:", error);
     }
@@ -25,47 +53,48 @@ function TaskList({ tasks = [], refreshTasks }) {
 
   return (
     <div className="task-list-container">
-
-      <h2>📋 Your Tasks</h2>
-
+      <h2 style={{ marginBottom: '1.5rem', fontWeight: 700, fontSize: '1.3rem' }}>
+        <i className="fa fa-list" style={{ color: '#6366f1', marginRight: 8 }}></i>
+        Your Tasks
+      </h2>
       {tasks.length === 0 ? (
         <p className="empty">No tasks available. Add one!</p>
       ) : (
         tasks.map((task) => (
           <div className="task-item" key={task._id}>
-
-            {/* Checkbox */}
-            <input
-              type="checkbox"
-              checked={task.completed || false}
-              onChange={() => handleToggle(task)}
-            />
-
-            {/* Task Info */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', minWidth: 120 }}>
+              {getPriorityBadge(task.priority)}
+              {getStatusBadge(task.status || (task.completed ? 'Completed' : 'Pending'))}
+            </div>
             <div className="task-info">
-              <span className={task.completed ? "done" : ""}>
-                {task.subject}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: 2 }}>
+                <span style={{ fontWeight: 600, fontSize: '1.08rem' }} className={task.completed ? "done" : ""}>{task.subject}</span>
+              </div>
               {task.description && (
                 <p className="task-description">{task.description}</p>
               )}
-              <small>
-                📅 {new Date(task.deadline).toLocaleDateString()} | ⚡ Difficulty: {task.difficulty}
-              </small>
+              <div style={{ color: '#a5b4fc', fontSize: '0.98rem', margin: '0.25rem 0 0.5rem 0' }}>{task.topic || task.topics}</div>
+              <div style={{ color: '#a5b4fc', fontSize: '0.98rem' }}>{formatDue(task)}</div>
             </div>
-
-            {/* Delete Button */}
-            <button
-              className="delete-btn"
-              onClick={() => handleDelete(task._id)}
-            >
-              ❌
-            </button>
-
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+              <input
+                type="checkbox"
+                checked={task.completed || false}
+                onChange={() => handleToggle(task)}
+                style={{ width: 20, height: 20, accentColor: '#6366f1' }}
+                title="Mark as complete"
+              />
+              <button
+                className="delete-btn"
+                onClick={() => handleDelete(task._id)}
+                title="Delete task"
+              >
+                <i className="fa fa-trash"></i>
+              </button>
+            </div>
           </div>
         ))
       )}
-
     </div>
   );
 }

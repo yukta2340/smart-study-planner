@@ -139,35 +139,31 @@ function Planner() {
       )}
 
       <div className="dashboard-container">
-        <header className="planner-header">
-          <h1>Welcome, {user?.name} 👋</h1>
-          <p>Let's stay productive today.</p>
+        {/* Header */}
+        <header className="planner-header" style={{ marginBottom: '2rem' }}>
+          <h1 style={{ fontWeight: 700, fontSize: '2.2rem', marginBottom: '0.5rem' }}>
+            <i className="fa fa-tasks" style={{ color: '#6366f1', marginRight: 10 }}></i>
+            Manage Your <span className="text-gradient">Tasks</span>
+          </h1>
+          <p style={{ color: '#a5b4fc', fontSize: '1.1rem' }}>Organize your study tasks and stay on track.</p>
         </header>
 
-        {activeSection === "dashboard" && (
-          <section id="dashboard" className="planner-section">
-            <DashboardOverview tasks={tasks} />
-          </section>
-        )}
-
-        {activeSection === "tasks" && (
-          <section id="tasks" className="planner-section">
+        {/* Main Task Section - Two Columns */}
+        <div className="task-main-grid">
+          <div className="glass-card task-form-glass">
             <TaskForm refreshTasks={fetchTasks} />
+          </div>
+          <div className="glass-card task-list-glass">
             <TaskList tasks={tasks} refreshTasks={fetchTasks} />
-          </section>
-        )}
+          </div>
+        </div>
 
-        {activeSection === "progress" && (
-          <section id="progress" className="planner-section">
-            <ProgressChart tasks={tasks} />
-          </section>
-        )}
-
-        {activeSection === "calendar" && (
-          <section id="calendar" className="planner-section">
-            <CalendarView tasks={tasks} refreshTasks={fetchTasks} />
-          </section>
-        )}
+        {/* Pro Tip Footer */}
+        <div className="task-pro-tip">
+          <span className="pro-tip-icon">💡</span>
+          <span className="pro-tip-title">Pro Tip</span>
+          <span className="pro-tip-text">Break large tasks into smaller steps and set deadlines to stay consistent!</span>
+        </div>
       </div>
     </div>
   );
