@@ -75,29 +75,6 @@
     max-width: 100%;
   }
 }
-
-.card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  padding: 30px;
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 700px;
-  text-align: center;
-}
-
-/* Form Elements */
-.card h2 {
-  margin-bottom: 20px;
-  color: #333;
-  font-size: 24px;
-}
-
-.card input {
-  width: 100%;
-  padding: 12px 15px;
-  margin: 8px 0;
   border: 1px solid #ddd;
   border-radius: 10px;
   font-size: 16px;

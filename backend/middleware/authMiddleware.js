@@ -34,11 +34,13 @@ const protect = async (req, res, next) => {
       if (!user) {
         const clerkUser = await clerk.users.getUser(client.userId);
         const emailAddress = clerkUser.primaryEmailAddress?.emailAddress || clerkUser.emailAddresses?.[0]?.emailAddress;
+        const phoneNumber = clerkUser.primaryPhoneNumber?.phoneNumber || clerkUser.phoneNumbers?.[0]?.phoneNumber;
         const name = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || emailAddress || 'Clerk User';
 
         user = await User.create({
           name,
           email: emailAddress,
+          phone: phoneNumber,
           clerkId: client.userId,
           isVerified: true,
         });

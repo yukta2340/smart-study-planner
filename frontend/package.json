@@ -14,7 +14,7 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.14.2",
     "recharts": "^3.8.1",
-    "@clerk/clerk-react": "^6.0.0"
+    "@clerk/clerk-react": "^5.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.4.1",

@@ -18,6 +18,10 @@ const userSchema = mongoose.Schema(
         return !this.clerkId;
       },
     },
+    phone: {
+      type: String,
+      default: null,
+    },
     clerkId: {
       type: String,
       unique: true,

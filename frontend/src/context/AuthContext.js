@@ -58,9 +58,6 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     await signOut();
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-  };
 
   return (
     <AuthContext.Provider
