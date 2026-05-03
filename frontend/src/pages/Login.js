@@ -4,7 +4,7 @@ import { SignIn } from "@clerk/clerk-react";
 
 function Login() {
   return (
-    <div className="auth-container">
+    <div className="auth-page">
       <div className="auth-clerk-wrap">
         <SignIn
           routing="path"

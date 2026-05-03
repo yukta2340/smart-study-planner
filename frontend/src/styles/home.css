@@ -3,15 +3,18 @@
 
 .home-container {
   min-height: 100vh;
+  width: 100vw;
+  max-width: none;
   color: var(--text-primary);
   text-align: center;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 48px 20px;
+  padding: 56px 0 56px;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   isolation: isolate;
   font-family: "Outfit", sans-serif;
 }
@@ -54,17 +57,24 @@
 
 /* Hero */
 .hero {
-  margin-bottom: 36px;
-  max-width: 940px;
+  margin-bottom: 64px;
+  width: 100vw;
+  max-width: none;
+  min-height: 88vh;
+  padding: 0 5vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   animation: heroEnter 0.7s ease;
 }
 
 .hero-badge {
   display: inline-block;
   margin-bottom: 18px;
-  padding: 8px 14px;
+  padding: 10px 18px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 0.95rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: 700;
@@ -74,112 +84,117 @@
 }
 
 .title {
-  font-size: clamp(2.2rem, 5vw, 4rem);
+  font-size: clamp(4.4rem, 3vw, 8rem);
   font-weight: 700;
   letter-spacing: 0.01em;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 18px;
   font-family: "Space Grotesk", sans-serif;
-  margin-bottom: 8px;
+  margin-bottom: 14px;
 }
 
 .title-icon {
-  filter: drop-shadow(0 8px 14px rgba(255, 95, 162, 0.35));
+  filter: drop-shadow(0 10px 20px rgba(255, 95, 162, 0.35));
 }
 
 .subtitle {
-  margin-top: 10px;
-  font-size: clamp(1.02rem, 2vw, 1.4rem);
+  margin-top: 14px;
+  font-size: clamp(2rem, 2vw, 2.6rem);
   font-weight: 600;
   color: #d7edff;
 }
 
 .hero-subline {
-  margin: 14px auto 0;
-  max-width: 720px;
-  font-size: 16px;
-  line-height: 1.6;
+  margin: 20px auto 0;
+  width: min(100%, 84vw);
+  max-width: none;
+  font-size: clamp(1.65rem, 1.2vw, 2rem);
+  line-height: 1.95;
   color: var(--text-muted);
 }
 
 /* Buttons */
 .buttons {
-  margin-top: 18px;
+  margin-top: 32px;
 }
 
 .buttons button {
-  margin: 15px;
-  padding: 13px 26px;
+  margin: 18px;
+  padding: 26px 58px;
   border: none;
   border-radius: 30px;
   background: linear-gradient(135deg, #1ea8ff, #2272ff);
   color: white;
   cursor: pointer;
   font-family: "Space Grotesk", sans-serif;
+  font-size: 1.35rem;
   font-weight: 600;
-  box-shadow: 0 10px 22px rgba(30, 136, 255, 0.35);
+  box-shadow: 0 18px 32px rgba(30, 136, 255, 0.35);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .buttons button:hover {
   transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 16px 30px rgba(30, 136, 255, 0.45);
+  box-shadow: 0 16px 34px rgba(30, 136, 255, 0.45);
 }
 
 .secondary {
-  background: rgba(255, 255, 255, 0.07) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
   border: 1px solid rgba(148, 218, 255, 0.6) !important;
   color: #d6f3ff !important;
   box-shadow: none !important;
 }
 
 .hero-stats {
-  margin: 16px auto 0;
-  max-width: 620px;
+  margin: 34px auto 0;
+  width: 90vw;
+  max-width: none;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(3, minmax(240px, 1fr));
+  gap: 32px;
 }
 
 .hero-stat {
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 18px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
 }
 
 .hero-stat-value {
   font-family: "Space Grotesk", sans-serif;
   font-weight: 700;
   color: var(--text-primary);
-  font-size: 0.95rem;
+  font-size: 1.2rem;
 }
 
 .hero-stat-label {
-  font-size: 0.8rem;
+  font-size: 1rem;
   color: var(--text-muted);
 }
 
 /* Features */
 .features {
   display: grid;
-  grid-template-columns: repeat(3, minmax(180px, 240px));
+  grid-template-columns: repeat(3, minmax(260px, 1fr));
   justify-content: center;
-  gap: 16px;
-  width: min(980px, 100%);
+  gap: 28px;
+  width: 100%;
+  max-width: none;
+  padding: 0 22px;
 }
 
 .feature-card {
-  padding: 22px 18px;
-  border-radius: 18px;
-  background: linear-gradient(160deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06));
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.2);
+  padding: 28px 24px;
+  border-radius: 20px;
+  background: linear-gradient(160deg, rgba(255,255,255,0.16), rgba(255,255,255,0.08));
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.22);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
   animation: cardRise 0.8s ease both;
 }
@@ -188,34 +203,71 @@
 .feature-card:nth-child(3) { animation-delay: 0.16s; }
 
 .feature-icon {
-  margin: 0 auto 10px;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
+  margin: 0 auto 14px;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
   display: grid;
   place-items: center;
-  font-size: 21px;
+  font-size: 24px;
   background: rgba(22, 142, 235, 0.22);
   border: 1px solid rgba(128, 208, 255, 0.5);
 }
 
 .feature-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 14px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
 }
 
 .feature-card h3 {
   margin: 0;
-  font-size: 1.08rem;
+  font-size: 1.35rem;
   font-family: "Space Grotesk", sans-serif;
   color: var(--text-primary);
 }
 
 .feature-card p {
-  font-size: 0.95rem;
-  margin-top: 10px;
+  font-size: 1.1rem;
+  margin-top: 12px;
   color: var(--text-muted);
-  line-height: 1.45;
+  line-height: 1.6;
+}
+
+@media (min-width: 1100px) {
+  .home-container {
+    padding: 56px 0 56px;
+  }
+
+  .hero {
+    width: 100vw;
+    max-width: none;
+    margin-bottom: 72px;
+    min-height: 92vh;
+  }
+
+  .title {
+    font-size: 7.8rem;
+  }
+
+  .subtitle {
+    font-size: 2.8rem;
+  }
+
+  .hero-subline {
+    width: 72vw;
+    max-width: none;
+  }
+
+  .buttons button {
+    padding: 30px 80px;
+    font-size: 1.7rem;
+  }
+
+  .features {
+    gap: 40px;
+    width: 100vw;
+    max-width: none;
+  }
 }
 
 @keyframes floatGlow {

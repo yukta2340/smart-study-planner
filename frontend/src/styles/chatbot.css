@@ -1,52 +1,99 @@
 .chatbot-page-container {
-  padding: 100px 20px 40px;
-  max-width: 900px;
-  margin: 0 auto;
+  width: 100vw;
+  max-width: none;
+  padding: 64px 0 56px;
+  margin: 0;
   color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: calc(100vh - 80px);
+  overflow-x: hidden;
 }
 
 .chatbot-hero {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 56px;
+  width: min(98vw, 1600px);
+}
+
+.hero-badge {
+  display: inline-block;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.1));
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 50px;
+  margin-bottom: 24px;
+  color: #93c5fd;
+  font-weight: 600;
+  font-size: 1rem;
 }
 
 .chatbot-hero h1 {
-  font-size: 42px;
-  margin-bottom: 10px;
-  background: linear-gradient(135deg, #667eea, #4ecdc4);
+  font-size: clamp(3.8rem, 3vw, 7.2rem);
+  margin-bottom: 24px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.chatbot-hero h1 .text-gradient {
+  background: linear-gradient(135deg, #1ea8ff, #2272ff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.chatbot-hero p {
-  font-size: 18px;
-  color: var(--text-muted);
-  opacity: 0.9;
+.chatbot-subtitle {
+  font-size: clamp(1.4rem, 1.15vw, 1.9rem);
+  color: #cbd5e1;
+  opacity: 0.95;
+  line-height: 1.8;
+  max-width: 70vw;
+  margin: 0 auto;
 }
 
 .chatbot-page-container .assistant-container {
   margin-top: 0;
-  max-width: 900px;
+  width: min(95vw, 1400px);
+  max-width: none;
   margin-left: auto;
   margin-right: auto;
 }
 
 .chatbot-page-container .assistant-chat-window {
-  max-height: 500px;
+  max-height: 600px;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   .chatbot-page-container {
-    padding: 80px 15px 30px;
+    padding: 48px 0 36px;
+    min-height: auto;
+  }
+
+  .chatbot-hero {
+    margin-bottom: 40px;
+    width: 100%;
+    padding: 0 20px;
   }
 
   .chatbot-hero h1 {
-    font-size: 32px;
+    font-size: 2.5rem;
   }
 
-  .chatbot-hero p {
-    font-size: 16px;
+  .chatbot-subtitle {
+    font-size: 1rem;
+    max-width: 90vw;
+  }
+}
+
+@media (min-width: 1024px) {
+  .chatbot-hero h1 {
+    font-size: 6.8rem;
+  }
+
+  .chatbot-subtitle {
+    font-size: 1.8rem;
   }
 }

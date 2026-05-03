@@ -28,14 +28,14 @@ function Register() {
 
   if (!ready) {
     return (
-      <div className="auth-container">
+      <div className="auth-page">
         <div className="auth-clerk-wrap">Loading signup...</div>
       </div>
     );
   }
 
   return (
-    <div className="auth-container">
+    <div className="auth-page">
       <div className="auth-clerk-wrap">
         <SignUp
           routing="path"

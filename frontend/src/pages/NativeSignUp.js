@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import PasswordStrengthMeter from "../components/PasswordStrengthMeter";
-import { useNavigate } from "react-router-dom";
+import { validatePasswordStrength } from "../utils/passwordValidator";
+import { useNavigate, Link } from "react-router-dom";
 import { useAppAuth } from "../context/AuthContext";
 
 function NativeSignUp() {
@@ -10,9 +11,17 @@ function NativeSignUp() {
   const navigate = useNavigate();
   const { register } = useAppAuth();
 
+  const passwordValidation = validatePasswordStrength(formData.password);
+
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
+
+    if (!passwordValidation.isValid) {
+      setError(passwordValidation.message);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -26,59 +35,69 @@ function NativeSignUp() {
   };
 
   return (
-    <div className="auth-container" style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)" }}>
-      <div className="card" style={{ background: "white", padding: "2.5rem", borderRadius: "1.5rem", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)", width: "100%", maxWidth: "450px" }}>
-        <h2 style={{ fontSize: "2rem", fontWeight: "800", marginBottom: "0.5rem", color: "#1f2937" }}>Create Account</h2>
-        <p style={{ color: "#6b7280", marginBottom: "2rem" }}>Join Smart Study Planner today</p>
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-card-header">
+          <div className="auth-brand">
+            <span className="auth-brand-dot" /> Smart Study Planner
+          </div>
+          <h2 className="auth-title">Create Account</h2>
+          <p className="auth-subtitle">Start your study journey with a planner built to keep you focused.</p>
+        </div>
 
-        {error && <div style={{ background: "#fee2e2", color: "#b91c1c", padding: "0.75rem", borderRadius: "0.5rem", marginBottom: "1.5rem", fontSize: "0.9rem" }}>{error}</div>}
+        {error && <div className="auth-error">{error}</div>}
 
-        <form onSubmit={handleRegister}>
-          <div style={{ marginBottom: "1.25rem" }}>
-            <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "600", marginBottom: "0.5rem", color: "#374151" }}>Full Name</label>
+        <form className="auth-form" onSubmit={handleRegister}>
+          <div className="auth-field">
+            <label className="auth-label">Full Name</label>
             <input
               type="text"
               required
-              style={{ width: "100%", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid #d1d5db", fontSize: "1rem", color: "#111827", backgroundColor: "#ffffff", caretColor: "#111827" }}
+              className="auth-input"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Enter your name"
             />
           </div>
 
-          <div style={{ marginBottom: "1.25rem" }}>
-            <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "600", marginBottom: "0.5rem", color: "#374151" }}>Email Address</label>
+          <div className="auth-field">
+            <label className="auth-label">Email Address</label>
             <input
               type="email"
               required
-              style={{ width: "100%", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid #d1d5db", fontSize: "1rem", color: "#111827", backgroundColor: "#ffffff", caretColor: "#111827" }}
+              className="auth-input"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="student@example.com"
             />
           </div>
 
-          <div style={{ marginBottom: "1.25rem" }}>
-            <label style={{ display: "block", fontSize: "0.875rem", fontWeight: "600", marginBottom: "0.5rem", color: "#374151" }}>Password</label>
+          <div className="auth-field">
+            <label className="auth-label">Password</label>
             <input
               type="password"
               required
-              style={{ width: "100%", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid #d1d5db", fontSize: "1rem", color: "#111827", backgroundColor: "#ffffff", caretColor: "#111827" }}
+              className="auth-input"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               placeholder="••••••••"
             />
             <PasswordStrengthMeter password={formData.password} />
+            {formData.password.length > 0 && (
+              <p className={`auth-strength-text ${passwordValidation.isValid ? "valid" : "invalid"}`}>
+                {passwordValidation.message}
+              </p>
+            )}
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{ width: "100%", padding: "0.875rem", borderRadius: "0.5rem", background: "#4f46e5", color: "white", fontSize: "1rem", fontWeight: "700", border: "none", cursor: "pointer", transition: "background 0.2s" }}
-          >
+          <button className="auth-button" type="submit" disabled={loading || !passwordValidation.isValid}>
             {loading ? "Creating Account..." : "Sign Up"}
           </button>
         </form>
+
+        <p className="auth-footer">
+          Already have an account? <Link to="/login">Login</Link>
+        </p>
       </div>
     </div>
   );

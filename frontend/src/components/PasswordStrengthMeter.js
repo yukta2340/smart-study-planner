@@ -10,8 +10,11 @@ const PasswordStrengthMeter = ({ password }) => {
   ];
 
   const strengthCount = checks.filter((c) => c.met).length;
-  const strengthLabels = ["Very Weak", "Weak", "Fair", "Strong", "Excellent"];
-  const strengthColors = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#10b981"];
+  const strengthLabels = ["Too Weak", "Very Weak", "Weak", "Fair", "Strong", "Excellent"];
+  const strengthColors = ["#ef4444", "#f97316", "#fb923c", "#eab308", "#22c55e", "#10b981"];
+  const hasPassword = password.length > 0;
+  const strengthLabel = hasPassword ? strengthLabels[strengthCount] : "Enter a password";
+  const strengthColor = hasPassword ? strengthColors[strengthCount] : "#6b7280";
 
   return (
     <div className="password-strength-meter" style={{ marginTop: "1rem" }}>
@@ -21,14 +24,14 @@ const PasswordStrengthMeter = ({ password }) => {
           style={{ 
             height: "100%", 
             width: `${(strengthCount / 5) * 100}%`, 
-            background: strengthColors[strengthCount - 1] || "#f3f4f6",
+            background: strengthColor,
             transition: "width 0.3s ease, background 0.3s ease" 
           }} 
         />
       </div>
       
-      <div className="strength-text" style={{ fontSize: "0.85rem", fontWeight: "600", color: strengthColors[strengthCount - 1] || "#6b7280", marginBottom: "0.75rem" }}>
-        Strength: {strengthLabels[strengthCount - 1] || "None"}
+      <div className="strength-text" style={{ fontSize: "0.85rem", fontWeight: "600", color: strengthColor, marginBottom: "0.75rem" }}>
+        Strength: {strengthLabel}
       </div>
 
       <ul className="strength-checklist" style={{ listStyle: "none", padding: 0, margin: 0 }}>

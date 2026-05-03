@@ -42,8 +42,13 @@ function ChatbotPage() {
 
       <div className="chatbot-page-container">
         <div className="chatbot-hero">
-          <h1>🤖 AI Study Coach</h1>
-          <p>Ask me anything about your tasks and I'll help you study smarter.</p>
+          <div className="hero-badge">
+            <span>🤖 AI Powered</span>
+          </div>
+          <h1>
+            AI <span className="text-gradient">Study Coach</span>
+          </h1>
+          <p className="chatbot-subtitle">Ask me anything about your tasks and I'll help you study smarter with personalized insights and strategies.</p>
         </div>
 
         <TaskAssistantChat tasks={tasks} />

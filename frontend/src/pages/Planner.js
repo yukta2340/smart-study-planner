@@ -139,31 +139,54 @@ function Planner() {
       )}
 
       <div className="dashboard-container">
-        {/* Header */}
-        <header className="planner-header" style={{ marginBottom: '2rem' }}>
-          <h1 style={{ fontWeight: 700, fontSize: '2.2rem', marginBottom: '0.5rem' }}>
-            <i className="fa fa-tasks" style={{ color: '#6366f1', marginRight: 10 }}></i>
-            Manage Your <span className="text-gradient">Tasks</span>
-          </h1>
-          <p style={{ color: '#a5b4fc', fontSize: '1.1rem' }}>Organize your study tasks and stay on track.</p>
-        </header>
+        {/* Dashboard Section */}
+        {activeSection === "dashboard" && (
+          <>
+            <DashboardOverview tasks={tasks} />
+          </>
+        )}
 
-        {/* Main Task Section - Two Columns */}
-        <div className="task-main-grid">
-          <div className="glass-card task-form-glass">
-            <TaskForm refreshTasks={fetchTasks} />
-          </div>
-          <div className="glass-card task-list-glass">
-            <TaskList tasks={tasks} refreshTasks={fetchTasks} />
-          </div>
-        </div>
+        {/* Tasks Section */}
+        {activeSection === "tasks" && (
+          <>
+            <header className="planner-header" style={{ marginBottom: '3rem' }}>
+              <h1 style={{ fontWeight: 700, fontSize: '2.8rem', marginBottom: '0.8rem' }}>
+                <i className="fa fa-tasks" style={{ color: '#6366f1', marginRight: 12, fontSize: '2.4rem' }}></i>
+                Manage Your <span className="text-gradient">Tasks</span>
+              </h1>
+              <p style={{ color: '#cbd5e1', fontSize: '1.25rem', marginBottom: 0 }}>Organize your study tasks and stay on track with AI-powered insights.</p>
+            </header>
 
-        {/* Pro Tip Footer */}
-        <div className="task-pro-tip">
-          <span className="pro-tip-icon">💡</span>
-          <span className="pro-tip-title">Pro Tip</span>
-          <span className="pro-tip-text">Break large tasks into smaller steps and set deadlines to stay consistent!</span>
-        </div>
+            <div className="task-main-grid">
+              <div className="glass-card task-form-glass">
+                <TaskForm refreshTasks={fetchTasks} />
+              </div>
+              <div className="glass-card task-list-glass">
+                <TaskList tasks={tasks} refreshTasks={fetchTasks} />
+              </div>
+            </div>
+
+            <div className="task-pro-tip">
+              <span className="pro-tip-icon">💡</span>
+              <span className="pro-tip-title">Pro Tip</span>
+              <span className="pro-tip-text">Break large tasks into smaller steps and set deadlines to stay consistent!</span>
+            </div>
+          </>
+        )}
+
+        {/* Progress Section */}
+        {activeSection === "progress" && (
+          <>
+            <ProgressChart tasks={tasks} />
+          </>
+        )}
+
+        {/* Calendar Section */}
+        {activeSection === "calendar" && (
+          <>
+            <CalendarView tasks={tasks} />
+          </>
+        )}
       </div>
     </div>
   );
