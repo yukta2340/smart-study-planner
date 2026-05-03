@@ -42,9 +42,6 @@ function Register() {
           path="/register"
           signInUrl="/login"
           fallbackRedirectUrl="/planner"
-          unsafeMetadata={{
-            phone: "",
-          }}
         />
       </div>
     </div>
