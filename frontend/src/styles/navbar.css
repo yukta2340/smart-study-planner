@@ -68,6 +68,22 @@
   background: #ff4d4d;
 }
 
+.planner-page {
+  padding-top: 120px;
+}
+
+.dashboard-container {
+  padding-top: 120px;
+}
+
+.planner-page .dashboard-container {
+  padding-top: 0;
+}
+
+.chatbot-page-container {
+  padding-top: 120px;
+}
+
 .navbar:hover {
   box-shadow: 0 14px 34px rgba(0,0,0,0.35);
 }

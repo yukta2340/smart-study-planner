@@ -18,12 +18,17 @@ function TaskForm({ refreshTasks }) {
 
     // ✅ Basic validation
     if (!form.subject || !form.deadline || !form.difficulty) {
-      alert("Please fill subject, deadline, and difficulty");
+      alert("Please fill title, deadline, and difficulty");
       return;
     }
 
     try {
-      await addTask(form);
+      await addTask({
+        title: form.subject,
+        description: form.description,
+        deadline: form.deadline,
+        difficulty: form.difficulty,
+      });
 
       alert("Task Added ✅");
 
@@ -74,7 +79,7 @@ function TaskForm({ refreshTasks }) {
 
         <input
           type="text"
-          placeholder="Subject (e.g. Math)"
+          placeholder="Task Title (e.g. Read Chapter 4)"
           value={form.subject}
           onChange={(e) =>
             setForm({ ...form, subject: e.target.value })

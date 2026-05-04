@@ -23,14 +23,27 @@ const registerUser = async (req, res) => {
   const verificationToken = crypto.randomBytes(32).toString('hex');
   const verificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
 
-  const user = await User.create({
-    name: name.trim(),
-    email: normalizedEmail,
-    password,
-    isVerified: false,
-    verificationToken,
-    verificationExpires,
-  });
+  let user;
+  try {
+    user = await User.create({
+      name: name.trim(),
+      email: normalizedEmail,
+      password,
+      isVerified: false,
+      verificationToken,
+      verificationExpires,
+    });
+  } catch (error) {
+    console.error('Registration failed:', error);
+    if (error.code === 11000) {
+      const duplicateField = Object.keys(error.keyPattern || {})[0] || 'email';
+      const duplicateMessage = duplicateField === 'email'
+        ? 'Email already registered.'
+        : 'Registration conflict detected. Please try a different account.';
+      return res.status(400).json({ success: false, message: duplicateMessage });
+    }
+    return res.status(500).json({ success: false, message: 'Registration failed. Please check your inputs.' });
+  }
 
   if (user) {
     // Send verification email (don't block registration if email fails)

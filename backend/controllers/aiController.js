@@ -1,4 +1,5 @@
 const Topic = require('../models/Topic');
+const Task = require('../models/Task');
 const sendResponse = require('../utils/responseHelper');
 
 /**
@@ -150,4 +151,58 @@ const recordFeedback = async (req, res) => {
   }
 };
 
-module.exports = { getWeeklyRoadmap, recordFeedback };
+/**
+ * @desc    AI Task Chat Assistant
+ * @route   POST /api/ai/chat
+ */
+const chatAssistant = async (req, res) => {
+  try {
+    const { taskId, message } = req.body;
+
+    let taskContext = null;
+    if (taskId) {
+      taskContext = await Task.findOne({ _id: taskId, user: req.user._id });
+    }
+
+    const taskLabel = taskContext ? taskContext.title : 'your current study task';
+    const dueDateText = taskContext && taskContext.deadline ? ` It is due on ${new Date(taskContext.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}.` : '';
+    const difficultyText = taskContext ? ` The difficulty level is ${taskContext.difficulty}/5.` : '';
+    const descriptionText = taskContext && taskContext.description ? ` Here is the task description: ${taskContext.description}.` : '';
+
+    const normalizedMessage = (message || '').toLowerCase();
+    let assistantResponse = `I can help you with ${taskLabel}.${dueDateText}${difficultyText}${descriptionText} `;
+
+    if (normalizedMessage.includes('plan') || normalizedMessage.includes('study plan')) {
+      assistantResponse +=
+        'Here is a simple study plan:\n' +
+        '- Review the task requirements and break it into 2–3 focused subtopics.\n' +
+        '- Allocate one study session for understanding the concept, one for practice, and one for review.\n' +
+        '- If the deadline is soon, prioritize the most urgent sections first and keep each session to 25–45 minutes with short breaks.';
+    } else if (normalizedMessage.includes('explain') || normalizedMessage.includes('understand')) {
+      assistantResponse +=
+        'Start by identifying the goal of the task, then split it into small steps. ' +
+        'Focus on the core concept first, then practice with an example or outline what you need to do next.';
+    } else if (normalizedMessage.includes('solve') || normalizedMessage.includes('strategy')) {
+      assistantResponse +=
+        'A strong strategy is to start with the easiest part of the task and build confidence, then move to harder sections. ' +
+        'Use active recall, practice problems, and explain the solution aloud to make the learning stick.';
+    } else if (normalizedMessage.includes('similar') || normalizedMessage.includes('related')) {
+      assistantResponse +=
+        'Look for similar topics in your current syllabus and compare how the concepts are related. ' +
+        'This will help you apply what you already know and make the task easier to complete.';
+    } else {
+      assistantResponse +=
+        'I recommend breaking the work into smaller steps, focusing on one concept at a time, and using short study sessions with regular review.';
+    }
+
+    assistantResponse += ' If you want, share the exact problem statement or ask for a step-by-step study plan.';
+
+    sendResponse(res, 200, 'AI assistant response generated', {
+      response: assistantResponse,
+    });
+  } catch (error) {
+    sendResponse(res, 500, 'AI assistant error', error.message);
+  }
+};
+
+module.exports = { getWeeklyRoadmap, recordFeedback, chatAssistant };

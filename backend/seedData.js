@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const User = require('./models/User');
 const Subject = require('./models/Subject');
 const Topic = require('./models/Topic');
+const Task = require('./models/Task');
 
 dotenv.config();
 
@@ -12,6 +13,7 @@ const seedData = async () => {
     console.log('Connected to MongoDB for Seeding...');
 
     // 1. Clear existing data (Careful!)
+    await Task.deleteMany({});
     await Topic.deleteMany({});
     await Subject.deleteMany({});
     await User.deleteMany({});
@@ -20,47 +22,91 @@ const seedData = async () => {
     const user = await User.create({
       name: 'Test Student',
       email: 'test@student.com',
-      password: 'password123'
+      password: 'password123',
+      fullName: 'Test Student',
     });
+
+    console.log('✅ User created:', user._id);
 
     // 3. Create Subjects
     const sub1 = await Subject.create({ user: user._id, name: 'DBMS', color: '#ff0000' });
     const sub2 = await Subject.create({ user: user._id, name: 'Mathematics', color: '#00ff00' });
+    const sub3 = await Subject.create({ user: user._id, name: 'Computer Networks', color: '#0000ff' });
+    const sub4 = await Subject.create({ user: user._id, name: 'Operating Systems', color: '#ffff00' });
 
-    // 4. Create Topics (Mixed Priorities)
+    console.log('✅ Subjects created');
+
+    // 4. Create 24 Dummy Tasks (14 completed, 10 pending)
+    const taskTitles = [
+      // Completed Tasks (14)
+      'Read Chapter 1 of DBMS',
+      'Complete SQL Queries Assignment',
+      'Practice Normalization Problems',
+      'Review Database Design Patterns',
+      'Solve 10 Calculus Integration Problems',
+      'Study Differential Equations',
+      'Review Trigonometry Basics',
+      'Practice Matrix Operations',
+      'Read Networking Fundamentals',
+      'Study OSI Model Layers',
+      'Practice TCP/IP Protocol',
+      'Review Routing Algorithms',
+      'Study CPU Scheduling Algorithms',
+      'Analyze Process Management',
+
+      // Pending Tasks (10)
+      'Complete DBMS Project Milestone 1',
+      'Solve Advanced Calculus Problems',
+      'Create Network Topology Diagram',
+      'Write Operating System Report',
+      'Study Advanced SQL Joins',
+      'Practice Statistical Analysis',
+      'Review Cloud Computing Concepts',
+      'Study Cryptography Algorithms',
+      'Complete Database Indexing Exercise',
+      'Analyze Real-time OS Requirements',
+    ];
+
+    const tasks = [];
     
-    // Topic A: URGENT & HARD (Should be Today #1)
-    await Topic.create({
-      subject: sub1._id,
-      name: 'Normalization (Critical)',
-      difficulty: 5,
-      estimatedTime: 120,
-      deadline: new Date(Date.now() + 86400000) // Tomorrow
-    });
+    // Create 14 completed tasks
+    for (let i = 0; i < 14; i++) {
+      tasks.push({
+        user: user._id,
+        title: taskTitles[i],
+        description: `Complete the task: ${taskTitles[i]}`,
+        deadline: new Date(Date.now() + Math.random() * 86400000 * 14),
+        completed: true,
+        difficulty: Math.floor(Math.random() * 5) + 1,
+        createdAt: new Date(Date.now() - Math.random() * 86400000 * 7),
+      });
+    }
 
-    // Topic B: LARGE but not urgent (Should fill Today)
-    await Topic.create({
-      subject: sub2._id,
-      name: 'Calculus Integration',
-      difficulty: 4,
-      estimatedTime: 200,
-      deadline: new Date(Date.now() + 86400000 * 5) // 5 days away
-    });
+    // Create 10 pending tasks
+    for (let i = 14; i < 24; i++) {
+      tasks.push({
+        user: user._id,
+        title: taskTitles[i],
+        description: `Complete the task: ${taskTitles[i]}`,
+        deadline: new Date(Date.now() + Math.random() * 86400000 * 14),
+        completed: false,
+        difficulty: Math.floor(Math.random() * 5) + 1,
+        createdAt: new Date(Date.now() - Math.random() * 86400000 * 3),
+      });
+    }
 
-    // Topic C: OVERFLOW (Should go to Tomorrow)
-    await Topic.create({
-      subject: sub1._id,
-      name: 'SQL Queries',
-      difficulty: 3,
-      estimatedTime: 100,
-      deadline: new Date(Date.now() + 86400000 * 3) // 3 days away
-    });
+    const createdTasks = await Task.insertMany(tasks);
+    console.log('✅ Tasks created:', createdTasks.length);
+    console.log(`   - Completed: 14`);
+    console.log(`   - Pending: 10`);
+    console.log(`   - Total: 24`);
 
-    console.log('✅ Dummy Data Seeded Successfully!');
-    console.log('Summary:');
-    console.log('- 1 Urgent Task (120m)');
-    console.log('- 1 Medium Task (200m)');
-    console.log('- 1 Overflow Task (100m)');
+    console.log('\n✅ Dummy Data Seeded Successfully!');
+    console.log('\nSummary:');
+    console.log('- 1 Test User (email: test@student.com)');
+    console.log('- 4 Subjects');
+    console.log('- 24 Tasks (14 completed, 10 pending)');
+    console.log('\nYou can now log in with the test credentials and see the data in MongoDB.');
     
     process.exit();
   } catch (error) {

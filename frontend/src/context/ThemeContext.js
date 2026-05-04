@@ -10,14 +10,23 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "light") setDark(false);
+    else if (savedTheme === "dark") setDark(true);
   }, []);
 
-  // Save theme
+  // Save theme and keep theme classes in sync across body + root.
   useEffect(() => {
     localStorage.setItem("theme", dark ? "dark" : "light");
+    document.body.classList.toggle("dark", dark);
+    document.body.classList.toggle("light", !dark);
+
+    const rootElement = document.getElementById("root");
+    if (rootElement) {
+      rootElement.classList.toggle("dark", dark);
+      rootElement.classList.toggle("light", !dark);
+    }
   }, [dark]);
 
-  const toggleTheme = () => setDark(!dark);
+  const toggleTheme = () => setDark((prev) => !prev);
 
   return (
     <ThemeContext.Provider value={{ dark, toggleTheme }}>

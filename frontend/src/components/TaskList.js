@@ -68,7 +68,7 @@ function TaskList({ tasks = [], refreshTasks }) {
             </div>
             <div className="task-info">
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: 2 }}>
-                <span style={{ fontWeight: 600, fontSize: '1.08rem' }} className={task.completed ? "done" : ""}>{task.subject}</span>
+                <span style={{ fontWeight: 600, fontSize: '1.08rem' }} className={task.completed ? "done" : ""}>{task.title || task.subject}</span>
               </div>
               {task.description && (
                 <p className="task-description">{task.description}</p>

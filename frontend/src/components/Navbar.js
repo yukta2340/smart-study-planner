@@ -6,7 +6,7 @@ import { ThemeContext } from "../context/ThemeContext";
 function Navbar() {
   const navigate = useNavigate();
   const { logout, user } = useAppAuth();
-  const { toggleTheme } = useContext(ThemeContext);
+  const { dark, toggleTheme } = useContext(ThemeContext);
 
   const handleLogout = () => {
     logout();
@@ -60,7 +60,9 @@ function Navbar() {
           AI Coach
         </button>
 
-        <button type="button" className="theme-toggle" onClick={toggleTheme}>🌗</button>
+        <button type="button" className="theme-toggle" onClick={toggleTheme}>
+          {dark ? "🌙 Dark" : "☀️ Light"}
+        </button>
 
         <div className="user-section">
           <span className="user-name">

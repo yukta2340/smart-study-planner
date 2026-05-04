@@ -18,10 +18,10 @@ function CalendarView({ tasks = [], refreshTasks }) {
   useEffect(() => {
     const formatted = tasks.map((task) => ({
       id: task._id,
-      title: task.subject,
+      title: task.title || task.subject,
       start: task.deadline,
       backgroundColor:
-        subjectColors[task.subject] || subjectColors.Default,
+        subjectColors[task.title || task.subject] || subjectColors.Default,
     }));
 
     setEvents(formatted);
@@ -29,12 +29,12 @@ function CalendarView({ tasks = [], refreshTasks }) {
 
   // ➕ Add task
   const handleDateClick = async (info) => {
-    const subject = prompt("Enter Subject");
+    const subject = prompt("Enter task title");
     if (!subject) return;
 
     try {
       await addTask({
-        subject,
+        title: subject,
         deadline: info.dateStr,
         difficulty: 3,
       });

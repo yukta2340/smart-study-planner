@@ -24,8 +24,11 @@ const userSchema = mongoose.Schema(
     },
     clerkId: {
       type: String,
-      unique: true,
-      sparse: true,
+      index: {
+        unique: true,
+        sparse: true,
+        partialFilterExpression: { clerkId: { $type: 'string' } },
+      },
       default: null,
     },
     // Email Verification
