@@ -40,6 +40,13 @@ function Home() {
           >
             Create Account
           </button>
+
+          <button
+            className="tertiary"
+            onClick={() => navigate("/native-login")}
+          >
+            Test Login
+          </button>
         </div>
 
         <div className="hero-stats">

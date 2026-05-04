@@ -23,8 +23,8 @@ function NativeRegister() {
       
       if (response.data.success !== false) {
         // Registration successful
-        alert("Registration successful! Please check your email to verify your account.");
-        navigate("/login");
+        alert("Registration successful! Please log in with your new account.");
+        navigate("/native-login");
       } else {
         setError(response.data.message || "Registration failed.");
       }
@@ -159,7 +159,7 @@ function NativeRegister() {
 
         <p style={{ textAlign: "center", marginTop: 24, color: "#94a3b8" }}>
           Already have an account?{" "}
-          <Link to="/login" style={{ color: "#6366f1", textDecoration: "none" }}>
+          <Link to="/native-login" style={{ color: "#6366f1", textDecoration: "none" }}>
             Login
           </Link>
         </p>

@@ -1,5 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
+const path = require('path');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const setupLogging = require('./middleware/loggerMiddleware');
@@ -13,7 +14,7 @@ const aiRoutes = require('./routes/aiRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const initSchedules = require('./utils/scheduler');
 
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 connectDB();
 initSchedules();
 
@@ -56,6 +57,17 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Top-Tier Backend running on port ${PORT}`);
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(
+      `❌ Port ${PORT} is already in use. Stop any other backend instance or change PORT in backend/.env.`
+    );
+  } else {
+    console.error('❌ Server error:', err);
+  }
+  process.exit(1);
 });

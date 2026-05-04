@@ -7,6 +7,7 @@
     "client": "cd frontend && npm run dev",
     "server": "cd backend && npm run dev",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "start": "npm run dev",
     "build": "cd frontend && npm run build"
   },
   "devDependencies": {

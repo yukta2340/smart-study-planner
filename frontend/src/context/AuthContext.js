@@ -6,9 +6,17 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const { isLoaded, isSignedIn, getToken } = useAuth();
-  const { user } = useUser();
+  const { user: clerkUser } = useUser();
   const { signOut } = useClerk();
   const [loading, setLoading] = useState(true);
+  const [nativeUser, setNativeUser] = useState(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      return JSON.parse(localStorage.getItem('user')) || null;
+    } catch {
+      return null;
+    }
+  });
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -26,7 +34,12 @@ export const AuthProvider = ({ children }) => {
           localStorage.removeItem('token');
         });
     } else {
-      localStorage.removeItem('token');
+      const storedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      if (!storedToken) {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        setNativeUser(null);
+      }
     }
   }, [isLoaded, isSignedIn, getToken]);
 
@@ -35,6 +48,7 @@ export const AuthProvider = ({ children }) => {
       const { data } = await loginApi({ email: email.trim().toLowerCase(), password });
       localStorage.setItem('user', JSON.stringify(data));
       localStorage.setItem('token', data.token);
+      setNativeUser(data);
       return data;
     } catch (error) {
       throw error;
@@ -50,6 +64,7 @@ export const AuthProvider = ({ children }) => {
       });
       localStorage.setItem('user', JSON.stringify(data));
       localStorage.setItem('token', data.token);
+      setNativeUser(data);
       return data;
     } catch (error) {
       throw error;
@@ -57,20 +72,27 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    await signOut();
+    if (isSignedIn) {
+      await signOut();
+    }
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    setNativeUser(null);
   };
+
+  const activeUser = isSignedIn ? clerkUser : nativeUser;
+  const tokenExists = typeof window !== 'undefined' ? Boolean(localStorage.getItem('token')) : false;
+  const isAuthenticated = Boolean(isSignedIn || tokenExists);
 
   return (
     <AuthContext.Provider
       value={{
-        user,
+        user: activeUser,
         login,
         register,
         logout,
         loading,
-        isAuthenticated: Boolean(isSignedIn),
+        isAuthenticated,
       }}
     >
       {children}

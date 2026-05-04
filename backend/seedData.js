@@ -1,11 +1,12 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const path = require('path');
 const User = require('./models/User');
 const Subject = require('./models/Subject');
 const Topic = require('./models/Topic');
 const Task = require('./models/Task');
 
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 const seedData = async () => {
   try {
@@ -20,10 +21,11 @@ const seedData = async () => {
 
     // 2. Create a Dummy User
     const user = await User.create({
-      name: 'Test Student',
-      email: 'test@student.com',
-      password: 'password123',
-      fullName: 'Test Student',
+      name: 'Yukta Khatter',
+      email: 'yuktakhatter5301@gmail.com',
+      password: 'Khatter55@',
+      fullName: 'Yukta Khatter',
+      isVerified: true,
     });
 
     console.log('✅ User created:', user._id);
@@ -103,7 +105,7 @@ const seedData = async () => {
 
     console.log('\n✅ Dummy Data Seeded Successfully!');
     console.log('\nSummary:');
-    console.log('- 1 Test User (email: test@student.com)');
+    console.log('- 1 Test User (email: yuktakhatter5301@gmail.com)');
     console.log('- 4 Subjects');
     console.log('- 24 Tasks (14 completed, 10 pending)');
     console.log('\nYou can now log in with the test credentials and see the data in MongoDB.');

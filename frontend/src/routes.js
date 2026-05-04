@@ -4,6 +4,7 @@ import { Routes, Route } from "react-router-dom";
 // Lazy load pages
 const Home = lazy(() => import("./pages/Home"));
 const Login = lazy(() => import("./pages/Login"));
+const NativeLogin = lazy(() => import("./pages/NativeLogin"));
 const Register = lazy(() => import("./pages/NativeRegister"));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 const SmartDashboard = lazy(() => import("./pages/SmartDashboard"));
@@ -21,6 +22,7 @@ function AppRoutes() {
         {/* 🌍 Public */}
         <Route path="/" element={<Home />} />
         <Route path="/login/*" element={<Login />} />
+        <Route path="/native-login" element={<NativeLogin />} />
         <Route path="/register/*" element={<Register />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
 

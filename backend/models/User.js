@@ -24,12 +24,8 @@ const userSchema = mongoose.Schema(
     },
     clerkId: {
       type: String,
-      index: {
-        unique: true,
-        sparse: true,
-        partialFilterExpression: { clerkId: { $type: 'string' } },
-      },
-      default: null,
+      unique: true,
+      sparse: true,
     },
     // Email Verification
     isVerified: {
@@ -83,6 +79,8 @@ userSchema.pre('save', async function (next) {
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
+
+userSchema.index({ clerkId: 1 }, { unique: true, sparse: true });
 
 const User = mongoose.model('User', userSchema);
 
