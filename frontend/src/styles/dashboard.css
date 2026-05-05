@@ -455,6 +455,120 @@ h1, h2, h3 {
   margin-bottom: 1.5rem;
 }
 
+.progress-page-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.9fr);
+  gap: 2rem;
+  align-items: start;
+  margin-bottom: 2rem;
+}
+
+.progress-summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.75rem;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.progress-summary-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.progress-summary-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.15rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.progress-summary-item span {
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.progress-summary-item strong {
+  color: #ffffff;
+  font-size: 1.1rem;
+}
+
+.progress-summary-banner {
+  background: linear-gradient(180deg, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.12));
+  border-radius: 1.3rem;
+  padding: 1.35rem;
+  border: 1px solid rgba(99, 102, 241, 0.18);
+}
+
+.progress-summary-banner h3 {
+  margin: 0 0 0.6rem;
+  font-size: 1.15rem;
+}
+
+.progress-summary-banner p {
+  color: #cbd5e1;
+  line-height: 1.7;
+  margin: 0 0 1.1rem;
+}
+
+.progress-upcoming-card {
+  border-radius: 1.5rem;
+  padding: 1.75rem;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.progress-task-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.progress-task-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.progress-task-card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+}
+
+.progress-task-card p {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 0.95rem;
+  max-width: 42ch;
+}
+
+.priority-pill {
+  display: inline-flex;
+  padding: 0.45rem 0.9rem;
+  border-radius: 9999px;
+  background: rgba(99, 102, 241, 0.15);
+  color: #dbeafe;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+@media (max-width: 1000px) {
+  .progress-page-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
 .weekly-graph-title {
   font-size: 1.25rem;
   font-weight: 700;

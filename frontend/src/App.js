@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Planner from "./pages/Planner";
+import ProgressPage from "./pages/ProgressPage";
 import ChatbotPage from "./pages/ChatbotPage";
 import SmartDashboard from "./pages/SmartDashboard";
 
@@ -43,6 +44,15 @@ function AppContent() {
         element={
           <ProtectedRoute>
             <Planner />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/progress"
+        element={
+          <ProtectedRoute>
+            <ProgressPage />
           </ProtectedRoute>
         }
       />

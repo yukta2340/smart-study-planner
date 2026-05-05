@@ -68,6 +68,33 @@
   background: #ff4d4d;
 }
 
+.user-id-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.user-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.18);
+}
+
+.user-id-text {
+  white-space: nowrap;
+}
+
 .planner-page {
   padding-top: 120px;
 }

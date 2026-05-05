@@ -43,6 +43,8 @@ export const registerUser = (data) => API.post("/auth/register", data);
 export const verifyCredentials = (data) => API.post("/auth/verify-credentials", data);
 export const loginUserOTP = (data) => API.post("/auth/login-otp", data);
 export const registerUserOTP = (data) => API.post("/auth/register-otp", data);
+export const forgotPassword = (email) => API.post("/auth/forgot-password", { email });
+export const resetPassword = (data) => API.post("/auth/reset-password", data);
 
 // =====================
 // 📧 OTP APIs

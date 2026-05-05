@@ -95,10 +95,56 @@ const sendOTPEmail = async (email, otp) => {
 };
 
 /**
+ * Send password reset OTP via email
+ */
+const sendPasswordResetEmail = async (email, otp) => {
+  try {
+    const transporter = createTransporter();
+
+    const mailOptions = {
+      from: '"Smart Study Planner" <no-reply@smartstudyplanner.com>',
+      to: email,
+      subject: '🔑 Password Reset OTP - Smart Study Planner',
+      text: `Your password reset OTP is: ${otp}. Valid for 10 minutes.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #4f46e5;">🔑 Password Reset</h2>
+          <p>Hello,</p>
+          <p>You requested a password reset. Your One-Time Password (OTP) is:</p>
+          <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
+            <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #4f46e5;">${otp}</span>
+          </div>
+          <p style="color: #666;">This OTP is valid for <strong>10 minutes</strong>.</p>
+          <p style="color: #999; font-size: 12px; margin-top: 20px;">If you didn't request this password reset, please ignore this email.</p>
+          <footer style="font-size: 12px; color: #777; margin-top: 20px;">© 2026 Smart Study Planner</footer>
+        </div>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('📧 Password reset OTP email sent:', info.messageId);
+
+    const isProduction = process.env.NODE_ENV === 'production';
+    const responsePayload = {
+      success: true,
+      info,
+    };
+
+    if (!isProduction) {
+      responsePayload.otp = otp;
+      responsePayload.devHint = 'In development mode, OTP is returned in the response for testing.';
+    }
+
+    return responsePayload;
+  } catch (error) {
+    console.error('❌ Failed to send password reset OTP email:', error.message);
+    return { success: false, error: error.message || 'Password reset OTP email send failed' };
+  }
+};
+/**
  * Send a study reminder email
  */
-const sendReminderEmail = async (email, taskTitle, deadline) => {
-  try {
+const sendReminderEmail = async (email, taskTitle, deadline) => {  try {
     // Create a transporter (Mocked for Demo - use real SMTP for production)
     const transporter = nodemailer.createTransport({
       host: 'smtp.ethereal.email', // Demo SMTP service
@@ -141,5 +187,6 @@ const sendReminderEmail = async (email, taskTitle, deadline) => {
 module.exports = {
   sendVerificationEmail,
   sendOTPEmail,
+  sendPasswordResetEmail,
   sendReminderEmail,
 };

@@ -9,6 +9,7 @@ const Register = lazy(() => import("./pages/NativeRegister"));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 const SmartDashboard = lazy(() => import("./pages/SmartDashboard"));
 const Planner = lazy(() => import("./pages/Planner"));
+const ProgressPage = lazy(() => import("./pages/ProgressPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Protected Route components
@@ -40,6 +41,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <Planner />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/progress"
+          element={
+            <ProtectedRoute>
+              <ProgressPage />
             </ProtectedRoute>
           }
         />

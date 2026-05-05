@@ -5,7 +5,6 @@ import { getTasks, notifyTaskPush } from "../services/api";
 
 // Components
 import Navbar from "../components/Navbar";
-import DashboardOverview from "../components/DashboardOverview";
 import TaskForm from "../components/TaskForm";
 import TaskList from "../components/TaskList";
 import ProgressChart from "../components/ProgressChart";
@@ -17,7 +16,7 @@ import "../styles/calendar.css";
 
 function Planner() {
   const [tasks, setTasks] = useState([]);
-  const [activeSection, setActiveSection] = useState("dashboard");
+  const [activeSection, setActiveSection] = useState("tasks");
   const [toast, setToast] = useState(null);
   const notifiedAtRef = useRef(new Map());
   const location = useLocation();
@@ -122,9 +121,9 @@ function Planner() {
   }, [toast]);
 
   useEffect(() => {
-    const sectionId = location.hash.replace("#", "") || "dashboard";
-    const validSections = ["dashboard", "tasks", "progress", "calendar"];
-    setActiveSection(validSections.includes(sectionId) ? sectionId : "dashboard");
+    const sectionId = location.hash.replace("#", "") || "tasks";
+    const validSections = ["tasks", "progress", "calendar"];
+    setActiveSection(validSections.includes(sectionId) ? sectionId : "tasks");
   }, [location.hash]);
 
   return (
@@ -139,13 +138,6 @@ function Planner() {
       )}
 
       <div className="dashboard-container">
-        {/* Dashboard Section */}
-        {activeSection === "dashboard" && (
-          <>
-            <DashboardOverview tasks={tasks} />
-          </>
-        )}
-
         {/* Tasks Section */}
         {activeSection === "tasks" && (
           <>

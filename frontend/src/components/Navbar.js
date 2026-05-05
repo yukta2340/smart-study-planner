@@ -14,6 +14,10 @@ function Navbar() {
   };
 
   const handleSectionNavigate = (sectionId) => {
+    if (sectionId === "progress") {
+      navigate("/progress");
+      return;
+    }
     navigate(`/planner#${sectionId}`);
   };
 
@@ -65,6 +69,14 @@ function Navbar() {
         </button>
 
         <div className="user-section">
+          {user?._id && (
+            <div className="user-id-badge">
+              <span className="user-icon">
+                {user?.gender === 'female' ? '👩' : user?.gender === 'male' ? '👨' : '👤'}
+              </span>
+              <span className="user-id-text">ID: {user._id.slice(-8)}</span>
+            </div>
+          )}
           <span className="user-name">
             {user?.fullName || user?.firstName || user?.name || user?.primaryEmailAddress?.emailAddress || user?.emailAddresses?.[0]?.emailAddress}
           </span>

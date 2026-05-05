@@ -33,6 +33,15 @@ const userSchema = mongoose.Schema(
       type: Date,
       default: null,
     },
+    // Password Reset
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
+    },
     // Gamification Features
     xp: {
       type: Number,

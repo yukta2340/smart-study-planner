@@ -1,6 +1,7 @@
 const Topic = require('../models/Topic');
 const Task = require('../models/Task');
 const sendResponse = require('../utils/responseHelper');
+const Groq = require('groq-sdk');
 
 /**
  * @desc    AI Decision Engine with Learning Feedback Loop
@@ -152,55 +153,124 @@ const recordFeedback = async (req, res) => {
 };
 
 /**
- * @desc    AI Task Chat Assistant
+ * @desc    AI Task Chat Assistant with Groq Integration
  * @route   POST /api/ai/chat
  */
 const chatAssistant = async (req, res) => {
   try {
-    const { taskId, message } = req.body;
+    const { taskId, message, history } = req.body;
+
+    if (!process.env.GROQ_API_KEY) {
+      return sendResponse(
+        res,
+        400,
+        'AI service not configured',
+        'Please set GROQ_API_KEY in your .env file'
+      );
+    }
+
+    if (!message || !message.trim()) {
+      return sendResponse(res, 400, 'Invalid request', 'Message cannot be empty');
+    }
 
     let taskContext = null;
     if (taskId) {
       taskContext = await Task.findOne({ _id: taskId, user: req.user?._id });
     }
 
-    const taskLabel = taskContext ? taskContext.title : 'your current study task';
-    const dueDateText = taskContext && taskContext.deadline ? ` It is due on ${new Date(taskContext.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}.` : '';
-    const difficultyText = taskContext ? ` The difficulty level is ${taskContext.difficulty}/5.` : '';
-    const descriptionText = taskContext && taskContext.description ? ` Here is the task description: ${taskContext.description}.` : '';
+    // Build task context for the AI
+    let systemPrompt = `You are a helpful AI Study Coach for the Smart Study Planner app. Your role is to:
+1. Help students understand complex topics and tasks
+2. Break down difficult problems into manageable steps
+3. Create personalized study plans
+4. Provide study strategies and tips
+5. Encourage and motivate students
+6. Adapt explanations based on difficulty level
 
-    const normalizedMessage = (message || '').toLowerCase();
-    let assistantResponse = `I can help you with ${taskLabel}.${dueDateText}${difficultyText}${descriptionText} `;
+Be concise, clear, and use simple language. Use bullet points and numbered lists when appropriate.`;
 
-    if (normalizedMessage.includes('plan') || normalizedMessage.includes('study plan')) {
-      assistantResponse +=
-        'Here is a simple study plan:\n' +
-        '- Review the task requirements and break it into 2–3 focused subtopics.\n' +
-        '- Allocate one study session for understanding the concept, one for practice, and one for review.\n' +
-        '- If the deadline is soon, prioritize the most urgent sections first and keep each session to 25–45 minutes with short breaks.';
-    } else if (normalizedMessage.includes('explain') || normalizedMessage.includes('understand')) {
-      assistantResponse +=
-        'Start by identifying the goal of the task, then split it into small steps. ' +
-        'Focus on the core concept first, then practice with an example or outline what you need to do next.';
-    } else if (normalizedMessage.includes('solve') || normalizedMessage.includes('strategy')) {
-      assistantResponse +=
-        'A strong strategy is to start with the easiest part of the task and build confidence, then move to harder sections. ' +
-        'Use active recall, practice problems, and explain the solution aloud to make the learning stick.';
-    } else if (normalizedMessage.includes('similar') || normalizedMessage.includes('related')) {
-      assistantResponse +=
-        'Look for similar topics in your current syllabus and compare how the concepts are related. ' +
-        'This will help you apply what you already know and make the task easier to complete.';
-    } else {
-      assistantResponse +=
-        'I recommend breaking the work into smaller steps, focusing on one concept at a time, and using short study sessions with regular review.';
+    if (taskContext) {
+      const deadline = taskContext.deadline
+        ? new Date(taskContext.deadline).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+          })
+        : 'No deadline';
+
+      systemPrompt += `\n\nCurrent Study Task Context:
+- Title: ${taskContext.title || 'Untitled'}
+- Difficulty: ${taskContext.difficulty || 'N/A'}/5
+- Due Date: ${deadline}
+- Description: ${taskContext.description || 'No description provided'}
+- Subject: ${taskContext.subject || 'General'}`;
     }
 
-    assistantResponse += ' If you want, share the exact problem statement or ask for a step-by-step study plan.';
+    // Convert message history format for Groq
+    const messages = [];
+
+    // Add previous messages from history if provided
+    if (history && Array.isArray(history)) {
+      history.forEach((msg) => {
+        if (msg.role && msg.content) {
+          messages.push({
+            role: msg.role === 'assistant' ? 'assistant' : 'user',
+            content: msg.content,
+          });
+        }
+      });
+    }
+
+    // Add current message
+    messages.push({
+      role: 'user',
+      content: message,
+    });
+
+    const groq = new Groq({
+      apiKey: process.env.GROQ_API_KEY,
+    });
+
+    const completion = await groq.chat.completions.create({
+      model: 'mixtral-8x7b-32768',
+      messages: [
+        {
+          role: 'system',
+          content: systemPrompt,
+        },
+        ...messages,
+      ],
+      temperature: 0.7,
+      max_tokens: 1000,
+    });
+
+    const assistantResponse =
+      completion.choices[0]?.message?.content ||
+      'Sorry, I could not generate a response. Please try again.';
 
     sendResponse(res, 200, 'AI assistant response generated', {
       response: assistantResponse,
     });
   } catch (error) {
+    console.error('AI Chat Error:', error.message);
+
+    if (error.status === 401 || error.message?.includes('authentication')) {
+      return sendResponse(
+        res,
+        401,
+        'AI authentication failed',
+        'Invalid Groq API key. Please check your configuration.'
+      );
+    }
+
+    if (error.message?.includes('rate_limit')) {
+      return sendResponse(
+        res,
+        429,
+        'Rate limit exceeded',
+        'Too many requests. Please wait a moment and try again.'
+      );
+    }
+
     sendResponse(res, 500, 'AI assistant error', error.message);
   }
 };

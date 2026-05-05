@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const sendVerificationEmail = require('../utils/emailService').sendVerificationEmail;
 const sendOTPEmail = require('../utils/emailService').sendOTPEmail;
+const sendPasswordResetEmail = require('../utils/emailService').sendPasswordResetEmail;
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -218,4 +219,64 @@ const loginWithOTP = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, verifyEmail, registerWithOTP, loginWithOTP, verifyCredentials };
+// Password reset functionality
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const user = await User.findOne({ email: normalizedEmail });
+
+  if (!user) {
+    return res.status(404).json({ success: false, message: 'User not found' });
+  }
+
+  // Generate reset token
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  const resetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+  user.resetPasswordToken = resetToken;
+  user.resetPasswordExpires = resetExpires;
+  await user.save();
+
+  // Send password reset email with OTP
+  try {
+    const emailResult = await sendPasswordResetEmail(user.email, resetToken);
+    const response = { success: true, message: 'Password reset OTP sent to your email' };
+
+    // In development mode, include the OTP in the response
+    if (emailResult.otp) {
+      response.otp = emailResult.otp;
+      response.devHint = emailResult.devHint;
+    }
+
+    res.json(response);
+  } catch (error) {
+    console.error('Failed to send password reset email:', error);
+    res.status(500).json({ success: false, message: 'Failed to send password reset email' });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const user = await User.findOne({
+    email: normalizedEmail,
+    resetPasswordToken: otp,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return res.status(400).json({ success: false, message: 'Invalid or expired reset token' });
+  }
+
+  // Update password
+  user.password = newPassword;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+  await user.save();
+
+  res.json({ success: true, message: 'Password reset successfully' });
+};
+
+module.exports = { registerUser, loginUser, verifyEmail, registerWithOTP, loginWithOTP, verifyCredentials, forgotPassword, resetPassword };
