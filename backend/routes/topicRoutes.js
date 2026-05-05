@@ -1,14 +1,13 @@
 const express = require('express');
 const { getTopicsBySubject, createTopic, updateTopic, deleteTopic } = require('../controllers/topicController');
-const { protect } = require('../middleware/authMiddleware');
 const { validateTopic } = require('../middleware/validationMiddleware');
 const router = express.Router();
 
-router.get('/:subjectId', protect, getTopicsBySubject);
-router.post('/', protect, validateTopic, createTopic);
+router.get('/:subjectId', getTopicsBySubject);
+router.post('/', validateTopic, createTopic);
 
 router.route('/:id')
-  .put(protect, validateTopic, updateTopic)
-  .delete(protect, deleteTopic);
+  .put(validateTopic, updateTopic)
+  .delete(deleteTopic);
 
 module.exports = router;

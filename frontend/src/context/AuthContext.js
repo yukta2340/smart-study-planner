@@ -13,12 +13,15 @@ export const AuthProvider = ({ children }) => {
     }
   });
   const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
+    // Initialize auth state on mount
     const token = localStorage.getItem('token');
     if (!token) {
       setUser(null);
     }
+    setInitialized(true);
   }, []);
 
   const login = async (email, password, otp) => {
@@ -71,7 +74,7 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
-        loading,
+        loading: loading || !initialized,
         isAuthenticated,
       }}
     >
