@@ -4,24 +4,20 @@ import { loginUserOTP, registerUserOTP } from '../services/api';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    if (typeof window === 'undefined') return null;
-    try {
-      return JSON.parse(localStorage.getItem('user')) || null;
-    } catch {
-      return null;
-    }
-  });
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    // Initialize auth state on mount
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setUser(null);
+    // Initialize auth state on mount - non-blocking
+    try {
+      const token = localStorage.getItem('token');
+      const savedUser = localStorage.getItem('user');
+      if (token && savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
+    } catch (e) {
+      console.error('Auth init error:', e);
     }
-    setInitialized(true);
   }, []);
 
   const login = async (email, password, otp) => {
@@ -74,7 +70,7 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
-        loading: loading || !initialized,
+        loading,
         isAuthenticated,
       }}
     >
@@ -84,3 +80,5 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAppAuth = () => useContext(AuthContext);
+
+export { AuthContext };

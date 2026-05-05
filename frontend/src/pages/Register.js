@@ -17,7 +17,9 @@ function Register() {
   });
   const [step, setStep] = useState("details"); // details, otp
   const [error, setError] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
   const [otpSent, setOtpSent] = useState(false);
+  const [devOtp, setDevOtp] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -26,23 +28,38 @@ function Register() {
   const handleSendOTP = async (e) => {
     e.preventDefault();
     setError("");
+    setStatusMessage("Sending OTP...");
 
     if (!formData.name || !formData.email || !formData.password) {
       setError("Please fill all fields");
+      setStatusMessage("");
       return;
     }
 
     if (formData.password.length < 6) {
       setError("Password must be at least 6 characters");
+      setStatusMessage("");
       return;
     }
 
     try {
-      await sendOTP(formData.email);
+      const response = await sendOTP(formData.email.trim().toLowerCase());
       setOtpSent(true);
       setStep("otp");
+      setDevOtp(response.data?.otp || "");
+      if (response.data?.otp) {
+        setStatusMessage(`OTP sent. Use ${response.data.otp} for development testing.`);
+      } else {
+        setStatusMessage("OTP sent successfully. Enter it below to complete registration.");
+      }
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to send OTP");
+      setStatusMessage("");
+      setError(
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          err.message ||
+          "Failed to send OTP"
+      );
     }
   };
 
@@ -107,6 +124,12 @@ function Register() {
               <PasswordStrengthMeter password={formData.password} />
             </div>
 
+            {statusMessage && <div className="success-message">{statusMessage}</div>}
+            {devOtp && (
+              <div className="info-message">
+                Dev OTP: <strong>{devOtp}</strong>
+              </div>
+            )}
             {error && <div className="error-message">{error}</div>}
 
             <button type="submit" className="auth-btn" disabled={loading}>
@@ -135,6 +158,12 @@ function Register() {
               />
             </div>
 
+            {statusMessage && <div className="success-message">{statusMessage}</div>}
+            {devOtp && (
+              <div className="info-message">
+                Dev OTP: <strong>{devOtp}</strong>
+              </div>
+            )}
             {error && <div className="error-message">{error}</div>}
 
             <button type="submit" className="auth-btn" disabled={loading}>

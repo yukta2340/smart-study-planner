@@ -2,7 +2,7 @@
 import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { sendOTP } from "../services/api";
+import { sendOTP, verifyCredentials } from "../services/api";
 
 function Login() {
   const navigate = useNavigate();
@@ -15,27 +15,69 @@ function Login() {
   });
   const [step, setStep] = useState("credentials"); // credentials, otp
   const [error, setError] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [credentialsVerified, setCredentialsVerified] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [devOtp, setDevOtp] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSendOTP = async (e) => {
+  const handleVerifyCredentials = async (e) => {
     e.preventDefault();
     setError("");
+    setStatusMessage("");
+    setDevOtp("");
 
     if (!formData.email || !formData.password) {
       setError("Please enter email and password first");
       return;
     }
 
+    setVerifying(true);
     try {
-      await sendOTP(formData.email);
-      setOtpSent(true);
-      setStep("otp");
+      await verifyCredentials({
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password,
+      });
+
+      setCredentialsVerified(true);
+      setStatusMessage("Credentials verified. Click Send OTP to continue.");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to send OTP");
+      setError(err.response?.data?.message || "Invalid email or password");
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const handleSendOTP = async (e) => {
+    e.preventDefault();
+    setError("");
+    setStatusMessage("");
+    setDevOtp("");
+
+    if (!credentialsVerified) {
+      setError("Please verify your email and password before sending OTP.");
+      return;
+    }
+
+    setSendingOtp(true);
+    try {
+      const response = await sendOTP(formData.email.trim().toLowerCase());
+      setStatusMessage("OTP sent successfully. Enter it below to log in.");
+      setStep("otp");
+      setDevOtp(response.data?.otp || "");
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          err.message ||
+          "Failed to send OTP"
+      );
+    } finally {
+      setSendingOtp(false);
     }
   };
 
@@ -62,7 +104,7 @@ function Login() {
         <h2>Login to Smart Study Planner</h2>
 
         {step === "credentials" && (
-          <form onSubmit={handleSendOTP}>
+          <form>
             <div className="form-group">
               <label>Email</label>
               <input
@@ -87,11 +129,33 @@ function Login() {
               />
             </div>
 
+            {statusMessage && <div className="success-message">{statusMessage}</div>}
+            {devOtp && (
+              <div className="info-message">
+                Dev OTP: <strong>{devOtp}</strong>
+              </div>
+            )}
             {error && <div className="error-message">{error}</div>}
 
-            <button type="submit" className="auth-btn" disabled={loading}>
-              {loading ? "Sending OTP..." : "Send OTP"}
-            </button>
+            <div className="button-group">
+              <button
+                type="button"
+                className="auth-btn"
+                onClick={handleVerifyCredentials}
+                disabled={verifying || loading}
+              >
+                {verifying ? "Verifying..." : "Verify Credentials"}
+              </button>
+
+              <button
+                type="button"
+                className="auth-btn secondary"
+                onClick={handleSendOTP}
+                disabled={!credentialsVerified || sendingOtp || verifying || loading}
+              >
+                {sendingOtp ? "Sending OTP..." : "Send OTP"}
+              </button>
+            </div>
           </form>
         )}
 

@@ -12,7 +12,7 @@ const normalizeApiBaseUrl = (url) => {
 const runningWithoutBackend = isProd && !configuredApiUrl;
 const resolvedBaseUrl = configuredApiUrl
   ? normalizeApiBaseUrl(configuredApiUrl)
-  : (isProd ? "https://your-backend-api.com/api" : "http://localhost:5000/api");
+  : (isProd ? "https://your-backend-api.com/api" : "http://localhost:5001/api");
 
 if (isProd && !configuredApiUrl) {
   console.warn(
@@ -39,6 +39,7 @@ API.interceptors.request.use((req) => {
 // =====================
 export const loginUser = (data) => API.post("/auth/login", data);
 export const registerUser = (data) => API.post("/auth/register", data);
+export const verifyCredentials = (data) => API.post("/auth/verify-credentials", data);
 export const loginUserOTP = (data) => API.post("/auth/login-otp", data);
 export const registerUserOTP = (data) => API.post("/auth/register-otp", data);
 

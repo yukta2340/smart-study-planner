@@ -2,6 +2,11 @@ const nodemailer = require('nodemailer');
 
 // Create reusable transporter using environment variables
 const createTransporter = () => {
+  const missingConfig = !process.env.EMAIL_USER || !process.env.EMAIL_PASS;
+  if (missingConfig && process.env.NODE_ENV !== 'production') {
+    console.warn('⚠️ SMTP credentials are not configured. OTP emails will not be sent by email in development mode.');
+  }
+
   return nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
     port: process.env.EMAIL_PORT || 587,
@@ -82,10 +87,10 @@ const sendOTPEmail = async (email, otp) => {
 
     const info = await transporter.sendMail(mailOptions);
     console.log('📧 OTP email sent:', info.messageId);
-    return true;
+    return { success: true, info };
   } catch (error) {
     console.error('❌ Failed to send OTP email:', error.message);
-    return false;
+    return { success: false, error: error.message || 'OTP email send failed' };
   }
 };
 
@@ -133,4 +138,8 @@ const sendReminderEmail = async (email, taskTitle, deadline) => {
   }
 };
 
-module.exports = sendReminderEmail;
+module.exports = {
+  sendVerificationEmail,
+  sendOTPEmail,
+  sendReminderEmail,
+};
