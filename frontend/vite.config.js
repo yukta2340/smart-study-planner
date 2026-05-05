@@ -33,7 +33,7 @@ export default defineConfig({
     port: 12345,
     strictPort: false,
     proxy: {
-      "/api": "http://localhost:5009",
+      "/api": "http://localhost:5000",
     },
   },
 });

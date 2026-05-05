@@ -42,13 +42,13 @@ function TaskAssistantChat({ tasks = [] }) {
         ...prev,
         {
           role: "assistant",
-          content: data?.response || "No response from assistant.",
+          content: data?.data?.response || "No response from assistant.",
         },
       ]);
     } catch (error) {
       console.error("Task assistant failed:", error);
       const serverMessage =
-        error?.response?.data?.error || "AI assistant is unavailable right now. Please try again.";
+        error?.response?.data?.message || "AI assistant is unavailable right now. Please try again.";
       setMessages((prev) => [
         ...prev,
         {
