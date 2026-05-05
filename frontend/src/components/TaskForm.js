@@ -45,7 +45,11 @@ function TaskForm({ refreshTasks }) {
 
     } catch (err) {
       console.error(err);
-      const msg = err?.response?.data?.error || "Error adding task";
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err.message ||
+        "Error adding task";
       alert(msg);
     }
   };

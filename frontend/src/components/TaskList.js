@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { updateTask, deleteTask } from "../services/api";
 
 function getPriorityBadge(priority) {
@@ -13,7 +13,7 @@ function getStatusBadge(status) {
   if (!status) return null;
   const s = status.toLowerCase();
   if (s === "pending") return <span className="badge badge-pending">Pending</span>;
-  if (s === "in progress") return <span className="badge badge-inprogress">In Progress</span>;
+  if (s === "in progress" || s === "inprogress") return <span className="badge badge-inprogress">In Progress</span>;
   if (s === "completed") return <span className="badge badge-completed">Completed</span>;
   return null;
 }
@@ -31,6 +31,23 @@ function formatDue(task) {
 }
 
 function TaskList({ tasks = [], refreshTasks }) {
+  const [filter, setFilter] = useState("all");
+
+  const normalizeStatus = (task) => {
+    const raw = task.status?.toLowerCase();
+    if (raw === "in progress" || raw === "inprogress") return "in progress";
+    if (raw === "completed") return "completed";
+    if (raw === "pending") return "pending";
+    return task.completed ? "completed" : "pending";
+  };
+
+  const filteredTasks = tasks.filter((task) => {
+    if (filter === "all") return true;
+    return normalizeStatus(task) === filter;
+  });
+
+  const getCount = (status) => tasks.filter((task) => normalizeStatus(task) === status).length;
+
   // Toggle Complete Status
   const handleToggle = async (task) => {
     try {
@@ -57,10 +74,34 @@ function TaskList({ tasks = [], refreshTasks }) {
         <i className="fa fa-list" style={{ color: '#6366f1', marginRight: 8 }}></i>
         Your Tasks
       </h2>
-      {tasks.length === 0 ? (
-        <p className="empty">No tasks available. Add one!</p>
+
+      <div className="status-filters">
+        {[
+          { label: 'All', value: 'all' },
+          { label: 'Pending', value: 'pending' },
+          { label: 'In Progress', value: 'in progress' },
+          { label: 'Completed', value: 'completed' },
+        ].map((item) => (
+          <button
+            key={item.value}
+            type="button"
+            className={`status-filter-btn ${filter === item.value ? 'active' : ''}`}
+            onClick={() => setFilter(item.value)}
+          >
+            {item.label}
+            {item.value !== 'all' && <span className="status-filter-count">{getCount(item.value)}</span>}
+          </button>
+        ))}
+      </div>
+
+      {filteredTasks.length === 0 ? (
+        <p className="empty">
+          {tasks.length === 0
+            ? 'No tasks available. Add one!'
+            : 'No tasks match this filter.'}
+        </p>
       ) : (
-        tasks.map((task) => (
+        filteredTasks.map((task) => (
           <div className="task-item" key={task._id}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', minWidth: 120 }}>
               {getPriorityBadge(task.priority)}

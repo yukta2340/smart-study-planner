@@ -21,7 +21,26 @@ initSchedules();
 
 const app = express();
 
-app.use(cors());
+const allowedLocalOrigins = [
+  'http://localhost:12345',
+  'http://localhost:3000',
+  'http://localhost:5173',
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (
+      allowedLocalOrigins.includes(origin) ||
+      /^https?:\/\/localhost(:\d+)?$/.test(origin) ||
+      /^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)
+    ) {
+      return callback(null, true);
+    }
+    callback(new Error(`Not allowed by CORS: ${origin}`));
+  },
+  credentials: true,
+}));
 app.use(express.json());
 setupLogging(app);
 
@@ -58,7 +77,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5009;
 const server = app.listen(PORT, () => {
   console.log(`🚀 Top-Tier Backend running on port ${PORT}`);
 });

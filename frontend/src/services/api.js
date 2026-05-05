@@ -12,7 +12,7 @@ const normalizeApiBaseUrl = (url) => {
 const runningWithoutBackend = isProd && !configuredApiUrl;
 const resolvedBaseUrl = configuredApiUrl
   ? normalizeApiBaseUrl(configuredApiUrl)
-  : (isProd ? "https://your-backend-api.com/api" : "http://localhost:5001/api");
+  : (isProd ? "https://your-backend-api.com/api" : "/api");
 
 if (isProd && !configuredApiUrl) {
   console.warn(
@@ -28,8 +28,9 @@ const API = axios.create({
 // 🔐 Attach tokens to every request
 API.interceptors.request.use((req) => {
   const token = localStorage.getItem("token");
+  req.headers = req.headers || {};
   if (token) {
-    req.headers.Authorization = `Bearer ${token}`;
+    req.headers['Authorization'] = `Bearer ${token}`;
   }
   return req;
 });

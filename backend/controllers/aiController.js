@@ -161,7 +161,7 @@ const chatAssistant = async (req, res) => {
 
     let taskContext = null;
     if (taskId) {
-      taskContext = await Task.findOne({ _id: taskId, user: req.user._id });
+      taskContext = await Task.findOne({ _id: taskId, user: req.user?._id });
     }
 
     const taskLabel = taskContext ? taskContext.title : 'your current study task';
