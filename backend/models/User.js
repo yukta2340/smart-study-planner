@@ -14,18 +14,11 @@ const userSchema = mongoose.Schema(
     },
     password: {
       type: String,
-      required: function () {
-        return !this.clerkId;
-      },
+      required: true,
     },
     phone: {
       type: String,
       default: null,
-    },
-    clerkId: {
-      type: String,
-      unique: true,
-      sparse: true,
     },
     // Email Verification
     isVerified: {

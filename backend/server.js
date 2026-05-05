@@ -12,6 +12,7 @@ const topicRoutes = require('./routes/topicRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
+const otpRoutes = require('./routes/otpRoutes');
 const initSchedules = require('./utils/scheduler');
 
 dotenv.config({ path: path.resolve(__dirname, '.env') });
@@ -31,6 +32,7 @@ app.use('/api/topics', topicRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/otp', otpRoutes);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });

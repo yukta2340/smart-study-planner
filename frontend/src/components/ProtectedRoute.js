@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Navigate } from "react-router-dom";
-import { useAppAuth } from "../context/AuthContext";
+import { AuthContext } from "../context/AuthContext";
 
 function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading } = useAppAuth();
+  const { isAuthenticated, loading } = useContext(AuthContext);
 
   if (loading) {
     return <div className="loader">Loading...</div>;

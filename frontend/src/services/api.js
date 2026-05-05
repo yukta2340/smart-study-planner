@@ -39,6 +39,14 @@ API.interceptors.request.use((req) => {
 // =====================
 export const loginUser = (data) => API.post("/auth/login", data);
 export const registerUser = (data) => API.post("/auth/register", data);
+export const loginUserOTP = (data) => API.post("/auth/login-otp", data);
+export const registerUserOTP = (data) => API.post("/auth/register-otp", data);
+
+// =====================
+// 📧 OTP APIs
+// =====================
+export const sendOTP = (email) => API.post("/otp/send", { email });
+export const verifyOTP = (email, otp) => API.post("/otp/verify", { email, otp });
 
 // =====================
 // 📚 SUBJECT APIs
@@ -89,10 +97,6 @@ export const uploadTaskImage = (file, markAsCompleted = false) => {
     headers: { "Content-Type": "multipart/form-data" },
   });
 };
-
-// OTP endpoints (optional feature in UI)
-export const sendOTP = (email) => API.post("/otp/send", { email });
-export const verifyOTP = (payload) => API.post("/otp/verify", payload);
 
 // Email verification
 export const verifyEmailAPI = (token) => API.get(`/auth/verify-email?token=${token}`);

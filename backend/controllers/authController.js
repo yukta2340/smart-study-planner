@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../models/User');
 const sendVerificationEmail = require('../utils/emailService').sendVerificationEmail;
+const sendOTPEmail = require('../utils/emailService').sendOTPEmail;
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -113,4 +114,91 @@ const loginUser = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, verifyEmail };
+// OTP-based registration
+const registerWithOTP = async (req, res) => {
+  const { name, email, password, otp } = req.body;
+  const normalizedEmail = email.trim().toLowerCase();
+
+  if (!otp) {
+    return res.status(400).json({ success: false, message: 'OTP is required' });
+  }
+
+  // Verify OTP (this would be implemented in otpController)
+  const otpStore = require('./otpController').otpStore;
+  const stored = otpStore.get(normalizedEmail);
+
+  if (!stored || stored.otp !== otp || Date.now() > stored.expires) {
+    return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+  }
+
+  const userExists = await User.findOne({ email: normalizedEmail });
+
+  if (userExists) {
+    return res.status(400).json({ success: false, message: 'User already exists' });
+  }
+
+  let user;
+  try {
+    user = await User.create({
+      name: name.trim(),
+      email: normalizedEmail,
+      password,
+      isVerified: true, // OTP verified
+    });
+  } catch (error) {
+    console.error('Registration failed:', error);
+    return res.status(500).json({ success: false, message: 'Registration failed' });
+  }
+
+  if (user) {
+    // Clear OTP
+    otpStore.delete(normalizedEmail);
+    
+    res.status(201).json({
+      success: true,
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      token: generateToken(user._id),
+    });
+  } else {
+    res.status(400).json({ success: false, message: 'Invalid user data' });
+  }
+};
+
+// OTP-based login
+const loginWithOTP = async (req, res) => {
+  const { email, password, otp } = req.body;
+  const normalizedEmail = email.trim().toLowerCase();
+
+  if (!otp) {
+    return res.status(400).json({ success: false, message: 'OTP is required' });
+  }
+
+  // Verify OTP
+  const otpStore = require('./otpController').otpStore;
+  const stored = otpStore.get(normalizedEmail);
+
+  if (!stored || stored.otp !== otp || Date.now() > stored.expires) {
+    return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
+  }
+
+  const user = await User.findOne({ email: normalizedEmail });
+
+  if (user && (await user.matchPassword(password))) {
+    // Clear OTP
+    otpStore.delete(normalizedEmail);
+    
+    res.json({
+      success: true,
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      token: generateToken(user._id),
+    });
+  } else {
+    res.status(401).json({ success: false, message: 'Invalid email or password' });
+  }
+};
+
+module.exports = { registerUser, loginUser, verifyEmail, registerWithOTP, loginWithOTP };

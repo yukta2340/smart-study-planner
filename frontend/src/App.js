@@ -5,8 +5,7 @@ import { AuthProvider } from "./context/AuthContext";
 // Pages
 import Home from "./pages/Home";
 import Login from "./pages/Login";
-import NativeLogin from "./pages/NativeLogin";
-import NativeSignUp from "./pages/NativeSignUp";
+import Register from "./pages/Register";
 import Planner from "./pages/Planner";
 import ChatbotPage from "./pages/ChatbotPage";
 import SmartDashboard from "./pages/SmartDashboard";
@@ -26,10 +25,8 @@ function AppContent() {
     <Routes>
       {/* 🌍 Public Routes */}
       <Route path="/" element={<Home />} />
-      <Route path="/login/*" element={<Login />} />
-      <Route path="/register" element={<NativeSignUp />} />
-      <Route path="/native-register" element={<NativeSignUp />} />
-      <Route path="/native-login" element={<NativeLogin />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
 
       {/* 🔐 Protected Routes */}
       <Route

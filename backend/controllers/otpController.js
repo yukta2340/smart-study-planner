@@ -22,6 +22,7 @@ const sendOTP = async (req, res) => {
   const sent = await sendOTPEmail(email, otp);
   
   if (sent) {
+    console.log(`🔐 OTP for ${email}: ${otp}`); // For testing - remove in production
     res.json({ message: 'OTP sent successfully to your email.' });
   } else {
     res.status(500).json({ message: 'Failed to send OTP. Please try again.' });
@@ -59,4 +60,4 @@ const verifyOTP = async (req, res) => {
   res.json({ message: 'OTP verified successfully', token });
 };
 
-module.exports = { sendOTP, verifyOTP };
+module.exports = { sendOTP, verifyOTP, otpStore };

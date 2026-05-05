@@ -1,15 +1,10 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { useAuth, useUser, useClerk } from '@clerk/clerk-react';
-import { loginUser as loginApi, registerUser as registerApi } from '../services/api';
+import { loginUserOTP, registerUserOTP } from '../services/api';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const { isLoaded, isSignedIn, getToken } = useAuth();
-  const { user: clerkUser } = useUser();
-  const { signOut } = useClerk();
-  const [loading, setLoading] = useState(true);
-  const [nativeUser, setNativeUser] = useState(() => {
+  const [user, setUser] = useState(() => {
     if (typeof window === 'undefined') return null;
     try {
       return JSON.parse(localStorage.getItem('user')) || null;
@@ -17,77 +12,62 @@ export const AuthProvider = ({ children }) => {
       return null;
     }
   });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!isLoaded) return;
-
-    setLoading(false);
-
-    if (isSignedIn) {
-      getToken()
-        .then((token) => {
-          if (token) {
-            localStorage.setItem('token', token);
-          }
-        })
-        .catch(() => {
-          localStorage.removeItem('token');
-        });
-    } else {
-      const storedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-      if (!storedToken) {
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-        setNativeUser(null);
-      }
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setUser(null);
     }
-  }, [isLoaded, isSignedIn, getToken]);
+  }, []);
 
-  const login = async (email, password) => {
+  const login = async (email, password, otp) => {
+    setLoading(true);
     try {
-      const { data } = await loginApi({ email: email.trim().toLowerCase(), password });
+      const { data } = await loginUserOTP({ email: email.trim().toLowerCase(), password, otp });
       localStorage.setItem('user', JSON.stringify(data));
       localStorage.setItem('token', data.token);
-      setNativeUser(data);
+      setUser(data);
       return data;
     } catch (error) {
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const register = async ({ name, email, password }) => {
+  const register = async ({ name, email, password, otp }) => {
+    setLoading(true);
     try {
-      const { data } = await registerApi({
+      const { data } = await registerUserOTP({
         name: name.trim(),
         email: email.trim().toLowerCase(),
         password,
+        otp,
       });
       localStorage.setItem('user', JSON.stringify(data));
       localStorage.setItem('token', data.token);
-      setNativeUser(data);
+      setUser(data);
       return data;
     } catch (error) {
       throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const logout = async () => {
-    if (isSignedIn) {
-      await signOut();
-    }
+  const logout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
-    setNativeUser(null);
+    setUser(null);
   };
 
-  const activeUser = isSignedIn ? clerkUser : nativeUser;
-  const tokenExists = typeof window !== 'undefined' ? Boolean(localStorage.getItem('token')) : false;
-  const isAuthenticated = Boolean(isSignedIn || tokenExists);
+  const isAuthenticated = Boolean(user && localStorage.getItem('token'));
 
   return (
     <AuthContext.Provider
       value={{
-        user: activeUser,
+        user,
         login,
         register,
         logout,

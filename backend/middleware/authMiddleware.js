@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const clerk = require('@clerk/clerk-sdk-node');
 const User = require('../models/User');
 
 const protect = async (req, res, next) => {
@@ -16,45 +15,12 @@ const protect = async (req, res, next) => {
       req.user = await User.findById(decoded.id).select('-password');
       return next();
     } catch (error) {
-      if (!process.env.CLERK_API_KEY) {
-        console.error(error);
-        return res.status(401).json({ message: 'Not authorized, token failed' });
-      }
-    }
-
-    try {
-      const client = await clerk.clients.verifyClient(token);
-
-      if (!client?.userId) {
-        return res.status(401).json({ message: 'Not authorized, invalid Clerk token' });
-      }
-
-      let user = await User.findOne({ clerkId: client.userId }).select('-password');
-
-      if (!user) {
-        const clerkUser = await clerk.users.getUser(client.userId);
-        const emailAddress = clerkUser.primaryEmailAddress?.emailAddress || clerkUser.emailAddresses?.[0]?.emailAddress;
-        const phoneNumber = clerkUser.primaryPhoneNumber?.phoneNumber || clerkUser.phoneNumbers?.[0]?.phoneNumber;
-        const name = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || emailAddress || 'Clerk User';
-
-        user = await User.create({
-          name,
-          email: emailAddress,
-          phone: phoneNumber,
-          clerkId: client.userId,
-          isVerified: true,
-        });
-      }
-
-      req.user = user;
-      return next();
-    } catch (error) {
       console.error(error);
       return res.status(401).json({ message: 'Not authorized, token failed' });
     }
+  } else {
+    return res.status(401).json({ message: 'Not authorized, no token' });
   }
-
-  res.status(401).json({ message: 'Not authorized, no token' });
 };
 
 module.exports = { protect };
