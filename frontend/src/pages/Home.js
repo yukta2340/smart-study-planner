@@ -1,9 +1,23 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAppAuth } from "../context/AuthContext";
 
 function Home() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAppAuth();
+
+  useEffect(() => {
+    // Redirect authenticated users to dashboard
+    if (isAuthenticated) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Show loading or nothing while redirecting
+  if (isAuthenticated) {
+    return <div className="loader">Redirecting to dashboard...</div>;
+  }
 
   return (
     <div className="home-container">

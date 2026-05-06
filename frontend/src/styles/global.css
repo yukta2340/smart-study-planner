@@ -17,27 +17,29 @@ body {
 }
 
 .dark {
+  --bg: linear-gradient(135deg, #1e1e2f, #121212);
   --text-primary: #ffffff;
   --text-muted: rgba(255, 255, 255, 0.8);
-  --surface: rgba(255, 255, 255, 0.1);
-  --surface-strong: rgba(255, 255, 255, 0.15);
-  --input-bg: rgba(255, 255, 255, 0.95);
-  --input-text: #1f1f2e;
+  --surface: rgba(255, 255, 255, 0.08);
+  --surface-strong: rgba(255, 255, 255, 0.12);
+  --input-bg: rgba(255, 255, 255, 0.08);
+  --input-text: #f8fafc;
   --button-text: #ffffff;
-  background: linear-gradient(135deg, #1e1e2f, #121212);
-  color: white;
+  background: var(--bg);
+  color: var(--text-primary);
 }
 
 .light {
-  --text-primary: #161b2d;
-  --text-muted: rgba(22, 27, 45, 0.75);
-  --surface: rgba(255, 255, 255, 0.7);
-  --surface-strong: rgba(255, 255, 255, 0.9);
+  --bg: #ffffff;
+  --text-primary: #000000;
+  --text-muted: rgba(0, 0, 0, 0.65);
+  --surface: rgba(255, 255, 255, 0.95);
+  --surface-strong: rgba(255, 255, 255, 1);
   --input-bg: #ffffff;
-  --input-text: #161b2d;
-  --button-text: #161b2d;
-  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
-  color: black;
+  --input-text: #000000;
+  --button-text: #000000;
+  background: var(--bg);
+  color: var(--text-primary);
 }
 
 .dark,
@@ -56,9 +58,20 @@ body {
   transition: all 0.2s ease;
 }
 
+.light .theme-toggle,
+.light .theme-btn {
+  border-color: rgba(15, 23, 42, 0.18);
+  background: rgba(15, 23, 42, 0.06);
+}
+
 .theme-toggle:hover,
 .theme-btn:hover {
   background: rgba(255, 255, 255, 0.16);
+}
+
+.light .theme-toggle:hover,
+.light .theme-btn:hover {
+  background: rgba(15, 23, 42, 0.12);
 }
 
 /* Desktop Optimizations */

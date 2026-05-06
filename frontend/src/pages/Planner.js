@@ -142,11 +142,11 @@ function Planner() {
         {activeSection === "tasks" && (
           <>
             <header className="planner-header" style={{ marginBottom: '3rem' }}>
-              <h1 style={{ fontWeight: 700, fontSize: '2.8rem', marginBottom: '0.8rem' }}>
-                <i className="fa fa-tasks" style={{ color: '#6366f1', marginRight: 12, fontSize: '2.4rem' }}></i>
+              <h1 className="planner-heading">
+                <i className="fa fa-tasks planner-heading-icon"></i>
                 Manage Your <span className="text-gradient">Tasks</span>
               </h1>
-              <p style={{ color: '#cbd5e1', fontSize: '1.25rem', marginBottom: 0 }}>Organize your study tasks and stay on track with AI-powered insights.</p>
+              <p className="planner-description">Organize your study tasks and stay on track with AI-powered insights.</p>
             </header>
 
             <div className="task-main-grid">

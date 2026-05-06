@@ -70,8 +70,8 @@ function TaskList({ tasks = [], refreshTasks }) {
 
   return (
     <div className="task-list-container">
-      <h2 style={{ marginBottom: '1.5rem', fontWeight: 700, fontSize: '1.3rem' }}>
-        <i className="fa fa-list" style={{ color: '#6366f1', marginRight: 8 }}></i>
+      <h2 className="task-list-title">
+        <i className="fa fa-list task-list-title-icon"></i>
         Your Tasks
       </h2>
 
@@ -114,8 +114,8 @@ function TaskList({ tasks = [], refreshTasks }) {
               {task.description && (
                 <p className="task-description">{task.description}</p>
               )}
-              <div style={{ color: '#a5b4fc', fontSize: '0.98rem', margin: '0.25rem 0 0.5rem 0' }}>{task.topic || task.topics}</div>
-              <div style={{ color: '#a5b4fc', fontSize: '0.98rem' }}>{formatDue(task)}</div>
+              <div className="task-topic">{task.topic || task.topics}</div>
+              <div className="task-due">{formatDue(task)}</div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
               <input

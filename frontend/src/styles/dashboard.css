@@ -61,6 +61,19 @@
   padding: 2.2rem;
 }
 
+.task-form-header h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 0.35rem;
+  color: #ffffff;
+}
+
+.task-form-header p {
+  margin: 0 0 1.6rem;
+  color: #cbd5e1;
+  line-height: 1.55;
+}
+
 .task-form-container h2 {
   font-size: 1.6rem;
   font-weight: 700;
@@ -102,6 +115,77 @@
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+}
+
+.planner-heading {
+  font-weight: 700;
+  font-size: clamp(2.4rem, 4vw, 3rem);
+  margin-bottom: 0.8rem;
+}
+
+.planner-heading-icon {
+  color: #6366f1;
+  margin-right: 12px;
+  font-size: 2.4rem;
+}
+
+.planner-description {
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.task-list-title {
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--text-primary);
+}
+
+.task-list-title-icon {
+  color: #6366f1;
+  margin-right: 8px;
+}
+
+.task-topic,
+.task-due {
+  color: var(--text-muted);
+  font-size: 0.98rem;
+}
+
+.light .planner-description,
+.light .task-list-title,
+.light .task-topic,
+.light .task-due {
+  color: #334155;
+}
+
+.light .task-item {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(15, 23, 42, 0.12);
+  color: #0f172a;
+}
+
+.light .task-item .done {
+  color: #64748b;
+}
+
+.light .task-description {
+  color: #475569;
+}
+
+.light .task-form-container input,
+.light .task-form-container textarea,
+.light .task-form-container select {
+  background: rgba(255, 255, 255, 0.95);
+  color: #0f172a;
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+.light .task-list-container h2,
+.light .task-main-grid .glass-card,
+.light .task-pro-tip {
+  color: #0f172a;
 }
 
 .task-form-container button:hover {
@@ -216,18 +300,18 @@
   color: #10b981;
 }
 .badge-pending {
-  background: rgba(254,202,202,0.22);
+  background: rgba(254, 202, 202, 0.3);
   color: #dc2626;
-  box-shadow: 0 10px 24px rgba(220,34,33,0.1);
+  box-shadow: 0 12px 28px rgba(239, 68, 68, 0.25);
 }
 .badge-inprogress {
   background: rgba(34,197,94,0.15);
   color: #22c55e;
 }
 .badge-completed {
-  background: rgba(251,191,36,0.2);
-  color: #b45309;
-  box-shadow: 0 10px 24px rgba(245,158,11,0.12);
+  background: rgba(251, 191, 36, 0.28);
+  color: #92400e;
+  box-shadow: 0 12px 28px rgba(245, 158, 11, 0.28);
 }
 .upcoming-tasks-table {
   width: 100%;
@@ -293,10 +377,15 @@
 
 .dashboard-container {
   min-height: 100vh;
-  background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
-  color: white;
+  background: var(--bg);
+  color: var(--text-primary);
   padding: 2rem;
   font-family: 'Inter', sans-serif;
+}
+
+.light .dashboard-container {
+  background: #ffffff;
+  color: #000000;
 }
 
 .glass-card {
@@ -306,6 +395,49 @@
   border-radius: 1.5rem;
   padding: 1.5rem;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.light .glass-card,
+.light .sidebar-card,
+.light .sidebar-profile-card,
+.light .ring-card,
+.light .sidebar-menu-item,
+.light .dashboard-header,
+.light .stat-grid .glass-card,
+.light .chart-grid .glass-card {
+  background: rgba(255,255,255,0.96);
+  color: #0f172a;
+  border-color: rgba(15,23,42,0.1);
+}
+
+.light .sidebar-menu-item {
+  background: rgba(243, 244, 246, 0.95);
+  color: #0f172a;
+}
+
+.light .sidebar-menu-item.active,
+.light .sidebar-menu-item:hover {
+  background: rgba(226, 232, 240, 0.95);
+  border-color: rgba(15,23,42,0.12);
+}
+
+.light .sidebar-brand h2,
+.light .sidebar-brand p,
+.light .sidebar-card h4,
+.light .sidebar-card p,
+.light .sidebar-profile-name,
+.light .sidebar-profile-meta,
+.light .section-title-row h3,
+.light .section-title-row span,
+.light .dashboard-header h1,
+.light .dashboard-header p,
+.light .stat-grid .glass-card,
+.light .dashboard-rings-row .ring-count,
+.light .ring-label,
+.light .ring-percentage,
+.light .ai-suggestion-card h4,
+.light .ai-suggestion-card p {
+  color: #0f172a;
 }
 
 .glass-card:hover {
@@ -540,6 +672,116 @@ h1, h2, h3 {
   margin: 0.65rem 0 0;
   color: #94a3b8;
   line-height: 1.6;
+}
+
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.sidebar-section-title {
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 0.75rem;
+  color: #8b94b8;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-section-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.sidebar-item-badge {
+  display: inline-flex;
+  padding: 0.15rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(96, 165, 250, 0.18);
+  color: #bfdbfe;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.sidebar-upgrade-card {
+  background: linear-gradient(180deg, rgba(99, 102, 241, 0.18), rgba(79, 70, 229, 0.12));
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.sidebar-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.upgrade-label {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.upgrade-pill {
+  display: inline-flex;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #a7f3d0;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.upgrade-button {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.95rem 1rem;
+  border: none;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #6366f1, #7c3aed);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.upgrade-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(99, 102, 241, 0.25);
+}
+
+.sidebar-profile-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.5rem;
+}
+
+.sidebar-profile-avatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.sidebar-profile-name {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.sidebar-profile-meta {
+  color: #94a3b8;
+  font-size: 0.95rem;
 }
 
 .dashboard-main {

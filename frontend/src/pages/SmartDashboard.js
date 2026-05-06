@@ -13,17 +13,45 @@ import {
 } from 'recharts';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useAppAuth } from '../context/AuthContext';
 import { getTasks } from '../services/api';
 import '../styles/Dashboard.css';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#a855f7', '#ec4899'];
-const SIDEBAR_ITEMS = [
-  { id: 'dashboard', label: 'Dashboard' },
-  { id: 'tasks', label: 'Tasks' },
-  { id: 'progress', label: 'Progress' },
-  { id: 'calendar', label: 'Calendar', path: '/planner#calendar' },
-  { id: 'chatbot', label: 'AI Coach', path: '/chatbot' },
-  { id: 'ai', label: 'AI Suggestions' },
+const SIDEBAR_SECTIONS = [
+  {
+    title: 'Study',
+    items: [
+      { id: 'dashboard', label: 'Dashboard' },
+      { id: 'tasks', label: 'Tasks' },
+      { id: 'progress', label: 'Progress' },
+      { id: 'calendar', label: 'Calendar', path: '/planner#calendar' },
+      { id: 'chatbot', label: 'AI Coach', path: '/chatbot' },
+      { id: 'ai', label: 'AI Suggestions', badge: 'New' },
+    ],
+  },
+  {
+    title: 'Analytics',
+    items: [
+      { id: 'performance', label: 'Performance' },
+      { id: 'studyInsights', label: 'Study Insights' },
+    ],
+  },
+  {
+    title: 'Resources',
+    items: [
+      { id: 'notes', label: 'Notes' },
+      { id: 'flashcards', label: 'Flashcards' },
+      { id: 'resources', label: 'Resources' },
+    ],
+  },
+  {
+    title: 'Settings',
+    items: [
+      { id: 'settings', label: 'Settings' },
+      { id: 'profile', label: 'Profile' },
+    ],
+  },
 ];
 
 function toDateKey(date) {
@@ -65,6 +93,7 @@ function formatDeadline(deadline) {
 
 const SmartDashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAppAuth();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState('dashboard');
@@ -174,29 +203,48 @@ const SmartDashboard = () => {
             <span className="sidebar-brand-icon">🧠</span>
             <div>
               <h2>StudyAI</h2>
-              <p>Smart study dashboard</p>
+              <p>Personal study command center</p>
             </div>
           </div>
 
-          <div className="sidebar-menu">
-            {SIDEBAR_ITEMS.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className={`sidebar-menu-item ${activeSection === item.id ? 'active' : ''}`}
-                onClick={() => handleSidebarNav(item)}
-              >
-                <span>{item.label}</span>
-                <span className="menu-pill">›</span>
-              </button>
-            ))}
+          {SIDEBAR_SECTIONS.map((section) => (
+            <div key={section.title} className="sidebar-section">
+              <div className="sidebar-section-title">{section.title}</div>
+              <div className="sidebar-section-items">
+                {section.items.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`sidebar-menu-item ${activeSection === item.id ? 'active' : ''}`}
+                    onClick={() => handleSidebarNav(item)}
+                  >
+                    <span>{item.label}</span>
+                    <span className="menu-pill">
+                      {item.badge ? <span className="sidebar-item-badge">{item.badge}</span> : '›'}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          <div className="sidebar-card sidebar-upgrade-card">
+            <div className="sidebar-card-header">
+              <span className="upgrade-label">Upgrade to Pro</span>
+              <span className="upgrade-pill">New</span>
+            </div>
+            <p>Unlock advanced AI insights and personalized study plans.</p>
+            <button type="button" className="upgrade-button" onClick={() => navigate('/planner')}>
+              Upgrade Now
+            </button>
           </div>
 
-          <div className="sidebar-card">
-            <h4>Quick status</h4>
-            <p>{completedTasks}/{totalTasks} completed</p>
-            <p>{pendingTasks} pending</p>
-            <p>{efficiency}% efficiency</p>
+          <div className="sidebar-profile-card">
+            <div className="sidebar-profile-avatar">{user?.name?.charAt(0) || 'S'}</div>
+            <div>
+              <div className="sidebar-profile-name">{user?.name || user?.email || 'Study Enthusiast'}</div>
+              <div className="sidebar-profile-meta">Level {user?.level || 14}</div>
+            </div>
           </div>
         </aside>
 

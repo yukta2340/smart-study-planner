@@ -77,7 +77,10 @@ function TaskForm({ refreshTasks }) {
 
   return (
     <div className="task-form-container">
-      <h2>➕ Add Study Task</h2>
+      <div className="task-form-header">
+        <h2>Your Task</h2>
+        <p>Add your task details here and keep your study plan on track.</p>
+      </div>
 
       <form onSubmit={handleSubmit}>
 

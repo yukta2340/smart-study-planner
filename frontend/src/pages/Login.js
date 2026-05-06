@@ -14,6 +14,7 @@ function Login() {
     otp: "",
   });
   const [step, setStep] = useState("credentials"); // credentials, otp, forgotPassword, resetPassword
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const [credentialsVerified, setCredentialsVerified] = useState(false);
@@ -92,7 +93,7 @@ function Login() {
 
     try {
       await login(formData.email, formData.password, formData.otp);
-      navigate("/progress");
+      navigate("/dashboard");
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     }
@@ -178,13 +179,21 @@ function Login() {
             <div className="form-group">
               <label>Password</label>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 required
                 placeholder="Enter your password"
               />
+              <label className="show-password-toggle">
+                <input
+                  type="checkbox"
+                  checked={showPassword}
+                  onChange={() => setShowPassword((prev) => !prev)}
+                />
+                Show password
+              </label>
             </div>
 
             {statusMessage && <div className="success-message">{statusMessage}</div>}

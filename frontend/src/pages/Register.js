@@ -16,6 +16,7 @@ function Register() {
     otp: "",
   });
   const [step, setStep] = useState("details"); // details, otp
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const [otpSent, setOtpSent] = useState(false);
@@ -74,7 +75,7 @@ function Register() {
 
     try {
       await register(formData);
-      navigate("/planner");
+      navigate("/dashboard");
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed");
     }
@@ -114,13 +115,21 @@ function Register() {
             <div className="form-group">
               <label>Password</label>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 required
                 placeholder="Create a password"
               />
+              <label className="show-password-toggle">
+                <input
+                  type="checkbox"
+                  checked={showPassword}
+                  onChange={() => setShowPassword((prev) => !prev)}
+                />
+                Show password
+              </label>
               <PasswordStrengthMeter password={formData.password} />
             </div>
 
