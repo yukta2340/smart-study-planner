@@ -123,19 +123,7 @@ const sendPasswordResetEmail = async (email, otp) => {
 
     const info = await transporter.sendMail(mailOptions);
     console.log('📧 Password reset OTP email sent:', info.messageId);
-
-    const isProduction = process.env.NODE_ENV === 'production';
-    const responsePayload = {
-      success: true,
-      info,
-    };
-
-    if (!isProduction) {
-      responsePayload.otp = otp;
-      responsePayload.devHint = 'In development mode, OTP is returned in the response for testing.';
-    }
-
-    return responsePayload;
+    return { success: true, info };
   } catch (error) {
     console.error('❌ Failed to send password reset OTP email:', error.message);
     return { success: false, error: error.message || 'Password reset OTP email send failed' };

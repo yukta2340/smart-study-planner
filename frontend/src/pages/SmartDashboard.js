@@ -109,6 +109,21 @@ const SmartDashboard = () => {
     }))).slice(0, 5);
   }
 
+  const subjectChartData = (Array.isArray(stats?.subjects) && stats.subjects.length > 0)
+    ? stats.subjects.map((sub, index) => ({
+        name: sub.name || sub._id || 'Subject',
+        value: sub.timeSpent || sub.minutes || sub.value || 0,
+        color: sub.color || COLORS[index % COLORS.length],
+      }))
+    : [
+        { name: 'Math', value: 40, color: COLORS[0] },
+        { name: 'Science', value: 30, color: COLORS[1] },
+        { name: 'History', value: 20, color: COLORS[2] },
+        { name: 'Languages', value: 10, color: COLORS[3] },
+      ];
+
+  const subjectTotal = subjectChartData.reduce((sum, item) => sum + item.value, 0);
+
   return (
     <div className="planner-page">
       <Navbar />
@@ -252,6 +267,57 @@ const SmartDashboard = () => {
                 <div style={{ color: '#94a3b8', fontSize: '1rem' }}>Completed</div>
                 <div style={{ color: '#22c55e', fontWeight: 'bold', marginTop: '0.5rem' }}>Great progress!<br />Keep it up, Scholar! 🚀</div>
               </div>
+            </div>
+          </motion.div>
+
+          {/* Subject Breakdown */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.6 }}
+            className="glass-card"
+            style={{ gridColumn: '1 / -1' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 'semibold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <i className="fa fa-pie-chart" style={{ color: '#38bdf8' }}></i> Subject Performance
+              </h3>
+              <a href="#" style={{ color: '#94a3b8', fontSize: '0.95rem', textDecoration: 'none', cursor: 'pointer' }}>View Detailed Report</a>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1.5rem', justifyItems: 'center' }}>
+              {subjectChartData.map((sub, index) => {
+                const percent = Math.round((sub.value / (subjectTotal || 1)) * 100);
+                return (
+                  <div key={sub.name} style={{ textAlign: 'center', width: '100%' }}>
+                    <div style={{ position: 'relative', width: 120, height: 120, margin: '0 auto 1rem' }}>
+                      <svg width="120" height="120" style={{ transform: 'rotate(-90deg)' }}>
+                        <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" />
+                        <circle 
+                          cx="60" 
+                          cy="60" 
+                          r="50" 
+                          fill="none" 
+                          stroke={sub.color} 
+                          strokeWidth="8"
+                          strokeDasharray={`${(percent / 100) * 314} 314`}
+                          style={{ transition: 'stroke-dasharray 0.5s ease' }}
+                        />
+                      </svg>
+                      <div style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ fontSize: '1.6rem', fontWeight: 700, color: '#fff' }}>{percent}%</div>
+                      </div>
+                    </div>
+                    <div style={{ fontWeight: 600, color: '#fff', marginBottom: '0.35rem' }}>{sub.name}</div>
+                    <div style={{ color: '#94a3b8', fontSize: '0.9rem' }}>↑ 5%</div>
+                  </div>
+                );
+              })}
             </div>
           </motion.div>
         </div>

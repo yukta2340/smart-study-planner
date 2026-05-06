@@ -23,6 +23,9 @@ const app = express();
 
 const allowedLocalOrigins = [
   'http://localhost:12345',
+  'http://localhost:12346',
+  'http://localhost:12347',
+  'http://localhost:12348',
   'http://localhost:3000',
   'http://localhost:5173',
 ];

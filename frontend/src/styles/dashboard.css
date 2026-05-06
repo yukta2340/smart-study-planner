@@ -328,6 +328,60 @@
   margin-bottom: 2rem;
 }
 
+.subject-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.8rem 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.subject-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.subject-circular-progress {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.subject-circular-progress svg {
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+}
+
+.subject-circular-progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.subject-circular-percent {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.subject-circular-label {
+  font-weight: 600;
+  color: #ffffff;
+  margin-top: 0.8rem;
+}
+
+.subject-circular-trend {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  margin-top: 0.35rem;
+}
+
 @media (max-width: 1024px) {
   .chart-grid {
     grid-template-columns: 1fr;

@@ -19,7 +19,6 @@ function Login() {
   const [credentialsVerified, setCredentialsVerified] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
-  const [devOtp, setDevOtp] = useState("");
   const [resetEmail, setResetEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -33,7 +32,6 @@ function Login() {
     e.preventDefault();
     setError("");
     setStatusMessage("");
-    setDevOtp("");
 
     if (!formData.email || !formData.password) {
       setError("Please enter email and password first");
@@ -60,7 +58,6 @@ function Login() {
     e.preventDefault();
     setError("");
     setStatusMessage("");
-    setDevOtp("");
 
     if (!credentialsVerified) {
       setError("Please verify your email and password before sending OTP.");
@@ -72,7 +69,6 @@ function Login() {
       const response = await sendOTP(formData.email.trim().toLowerCase());
       setStatusMessage("OTP sent successfully. Enter it below to log in.");
       setStep("otp");
-      setDevOtp(response.data?.otp || "");
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -106,7 +102,6 @@ function Login() {
     e.preventDefault();
     setError("");
     setStatusMessage("");
-    setDevOtp("");
 
     if (!resetEmail) {
       setError("Please enter your email address");
@@ -118,7 +113,6 @@ function Login() {
       const response = await forgotPassword(resetEmail.trim().toLowerCase());
       setStatusMessage("Password reset OTP sent to your email");
       setStep("resetPassword");
-      setDevOtp(response.data?.otp || "");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to send password reset email");
     } finally {
@@ -194,11 +188,6 @@ function Login() {
             </div>
 
             {statusMessage && <div className="success-message">{statusMessage}</div>}
-            {devOtp && (
-              <div className="info-message">
-                Dev OTP: <strong>{devOtp}</strong>
-              </div>
-            )}
             {error && <div className="error-message">{error}</div>}
 
             <div className="button-group">
@@ -278,11 +267,6 @@ function Login() {
             </div>
 
             {statusMessage && <div className="success-message">{statusMessage}</div>}
-            {devOtp && (
-              <div className="info-message">
-                Dev OTP: <strong>{devOtp}</strong>
-              </div>
-            )}
             {error && <div className="error-message">{error}</div>}
 
             <button type="submit" className="auth-btn" disabled={sendingOtp}>
@@ -341,11 +325,6 @@ function Login() {
             </div>
 
             {statusMessage && <div className="success-message">{statusMessage}</div>}
-            {devOtp && (
-              <div className="info-message">
-                Dev OTP: <strong>{devOtp}</strong>
-              </div>
-            )}
             {error && <div className="error-message">{error}</div>}
 
             <button type="submit" className="auth-btn">
