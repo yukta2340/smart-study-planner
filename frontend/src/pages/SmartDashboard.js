@@ -1,394 +1,461 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell 
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
 } from 'recharts';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Flame, Trophy, Target, Brain, Zap, Clock, ChevronRight
-} from 'lucide-react';
-import { getDashboardStats, getWeeklyRoadmap } from '../services/api';
-import Navbar from '../components/Navbar';
+import { getTasks } from '../services/api';
 import '../styles/Dashboard.css';
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#a855f7', '#ec4899'];
+const SIDEBAR_ITEMS = [
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'tasks', label: 'Tasks' },
+  { id: 'progress', label: 'Progress' },
+  { id: 'calendar', label: 'Calendar', path: '/planner#calendar' },
+  { id: 'chatbot', label: 'AI Coach', path: '/chatbot' },
+  { id: 'ai', label: 'AI Suggestions' },
+];
+
+function toDateKey(date) {
+  const d = new Date(date);
+  return d.toISOString().slice(0, 10);
+}
+
+function getCurrentWeek() {
+  const now = new Date();
+  const day = now.getDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + mondayOffset);
+
+  const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  return DAYS.map((label, index) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + index);
+    return { label, key: toDateKey(d) };
+  });
+}
+
+function formatDeadline(deadline) {
+  if (!deadline) return 'No due date';
+  const date = new Date(deadline);
+  if (Number.isNaN(date.getTime())) return 'No due date';
+  const now = new Date();
+  const diff = date.getTime() - now.getTime();
+
+  if (date.toDateString() === now.toDateString()) {
+    return `Today · ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  }
+  if (diff > 0 && diff < 24 * 60 * 60 * 1000) {
+    return `Tomorrow · ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  }
+
+  return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
 
 const SmartDashboard = () => {
   const navigate = useNavigate();
-  const [stats, setStats] = useState(null);
-  const [roadmap, setRoadmap] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState('dashboard');
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchTasks = async () => {
       try {
-        const [statsRes, roadmapRes] = await Promise.all([
-          getDashboardStats(),
-          getWeeklyRoadmap()
-        ]);
-        
-        // Defensive checks for data structure
-        const dashboardData = statsRes?.data?.data || null;
-        const roadmapData = roadmapRes?.data?.data?.roadmap || [];
-        
-        setStats(dashboardData);
-        setRoadmap(roadmapData);
+        const response = await getTasks();
+        const tasksData = response.data?.data || response.data || [];
+        setTasks(tasksData);
       } catch (err) {
-        console.error("Dashboard Load Error:", err);
-        // Fallback dummy data
-        setStats({
-          summary: { totalMinutes: 120, totalSessions: 5, avgProductivity: 7.5 },
-          subjects: [{ _id: 'Study', timeSpent: 120 }],
-          weeklyTrend: [{ _id: 'Today', minutes: 120 }]
-        });
-        setRoadmap([]);
+        console.error('Failed to load dashboard tasks:', err);
+        setError('Unable to load task data right now.');
+        setTasks([]);
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
+
+    fetchTasks();
   }, []);
 
-  if (loading) return <div className="dashboard-container">Loading Intelligence...</div>;
-  if (!stats) return <div className="dashboard-container">Error loading dashboard stats.</div>;
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter((task) => task.completed).length;
+  const pendingTasks = totalTasks - completedTasks;
+  const overdueTasks = tasks.filter((task) => !task.completed && new Date(task.deadline).getTime() < Date.now()).length;
+  const efficiency = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
+  const weeklyData = useMemo(() => {
+    const week = getCurrentWeek();
+    const map = {};
+    week.forEach(({ key, label }) => {
+      map[key] = { day: label, Completed: 0, Pending: 0 };
+    });
 
-  // --- Dynamic Data Mapping ---
-  // 1. Stat Cards
-  const totalTasks = stats?.tasks?.total ?? 0;
-  const completedTasks = stats?.tasks?.completed ?? 0;
-  const pendingTasks = stats?.tasks?.pending ?? (totalTasks - completedTasks);
-  const efficiency = stats?.efficiency ?? (totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0);
-  const taskCompletionPct = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    tasks.forEach((task) => {
+      const date = new Date(task.deadline);
+      const key = toDateKey(date);
+      if (map[key]) {
+        if (task.completed) map[key].Completed += 1;
+        else map[key].Pending += 1;
+      }
+    });
 
-  // 2. Donut Chart Data
-  const donutData = [
-    { name: 'Completed', value: completedTasks },
-    { name: 'Pending', value: pendingTasks },
-  ];
+    return week.map(({ key }) => map[key]);
+  }, [tasks]);
 
-  // 3. Weekly Task Progress (Line Chart)
-  // Expecting stats.weeklyTrend: [{ _id: 'Mon', completed: 2, pending: 1 }, ...]
-  const weeklyTrend = (stats?.weeklyTrend || []).map(day => ({
-    day: day._id,
-    Completed: day.completed ?? 0,
-    Pending: day.pending ?? 0,
-  }));
+  const hasWeeklyData = weeklyData.some((item) => item.Completed + item.Pending > 0);
+  const chartData = hasWeeklyData
+    ? weeklyData
+    : [{ day: 'All', Completed: completedTasks, Pending: pendingTasks }];
 
-  // 4. Upcoming Tasks Table (from stats.tasksList or roadmap)
-  // Prefer stats.tasksList if available, else fallback to roadmap
-  let upcomingTasks = [];
-  if (Array.isArray(stats?.tasksList)) {
-    upcomingTasks = stats.tasksList
-      .filter(t => !t.completed)
-      .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
-      .slice(0, 5)
-      .map(t => ({
-        task: t.title || t.task || t.subject,
-        subject: t.subject || '',
-        priority: t.priority || 'Medium',
-        due: t.deadline ?
-          (() => {
-            const d = new Date(t.deadline);
-            const now = new Date();
-            if (d.toDateString() === now.toDateString()) return `Today, ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-            if (d - now < 24*60*60*1000 && d > now) return `Tomorrow, ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-            return `${d.toLocaleDateString([], { month: 'short', day: 'numeric' })}, ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-          })() : 'No due date',
-        status: t.status || (t.completed ? 'Completed' : 'Pending'),
-      }));
-  } else if (Array.isArray(roadmap) && roadmap.length > 0) {
-    // fallback: show roadmap sessions as tasks
-    upcomingTasks = roadmap.flatMap(day => (day.sessions || []).map(s => ({
-      task: s.title || s.task || s.subject,
-      subject: s.subject || '',
-      priority: s.priority || 'Medium',
-      due: day.date || '',
-      status: 'Pending',
-    }))).slice(0, 5);
-  }
+  const upcomingTasks = [...tasks]
+    .sort((a, b) => new Date(a.deadline || 0) - new Date(b.deadline || 0))
+    .slice(0, 5)
+    .map((task) => ({
+      task: task.title || task.subject || 'Untitled task',
+      subject: task.subject || 'General',
+      priority:
+        task.difficulty >= 4
+          ? 'High'
+          : task.difficulty >= 2
+          ? 'Medium'
+          : 'Low',
+      due: formatDeadline(task.deadline),
+      status: task.completed ? 'Completed' : 'Pending',
+    }));
 
-  const subjectChartData = (Array.isArray(stats?.subjects) && stats.subjects.length > 0)
-    ? stats.subjects.map((sub, index) => ({
-        name: sub.name || sub._id || 'Subject',
-        value: sub.timeSpent || sub.minutes || sub.value || 0,
-        color: sub.color || COLORS[index % COLORS.length],
-      }))
-    : [
-        { name: 'Math', value: 40, color: COLORS[0] },
-        { name: 'Science', value: 30, color: COLORS[1] },
-        { name: 'History', value: 20, color: COLORS[2] },
-        { name: 'Languages', value: 10, color: COLORS[3] },
-      ];
+  const subjectChartData = useMemo(() => {
+    const grouped = tasks.reduce((acc, task) => {
+      const label = task.subject || task.title || 'General';
+      acc[label] = (acc[label] || 0) + 1;
+      return acc;
+    }, {});
+
+    return Object.entries(grouped).map(([name, value], index) => ({
+      name,
+      value,
+      color: COLORS[index % COLORS.length],
+    }));
+  }, [tasks]);
 
   const subjectTotal = subjectChartData.reduce((sum, item) => sum + item.value, 0);
 
+  const handleSidebarNav = (item) => {
+    setActiveSection(item.id);
+    if (item.path) {
+      navigate(item.path);
+      return;
+    }
+    const element = document.getElementById(item.id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  if (loading) {
+    return <div className="dashboard-container">Loading dashboard...</div>;
+  }
+
   return (
-    <div className="planner-page">
-      <Navbar />
-      <div className="dashboard-container">
-        {/* Navigation Buttons */}
-        <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        style={{
-          display: 'flex',
-          gap: '0.75rem',
-          flexWrap: 'wrap',
-          marginBottom: '1.25rem'
-        }}
-      >
-        <button className="nav-link-btn" type="button" onClick={() => navigate('/dashboard')}>
-          Dashboard
-        </button>
-        <button className="nav-link-btn" type="button" onClick={() => navigate('/planner#tasks')}>
-          Tasks
-        </button>
-        <button className="nav-link-btn" type="button" onClick={() => navigate('/planner#progress')}>
-          Progress
-        </button>
-        <button className="nav-link-btn" type="button" onClick={() => navigate('/planner#calendar')}>
-          Calendar
-        </button>
-        <button className="nav-link-btn" type="button" onClick={() => navigate('/chatbot')}>
-          AI Coach
-        </button>
-      </motion.div>
-
-        {/* Greeting Section */}
-        <motion.header 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{ marginBottom: '2rem' }}
-        >
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>
-            Welcome back, <span className="text-gradient">Scholar</span> <span role="img" aria-label="wave">👋</span>
-          </h1>
-          <p style={{ color: '#94a3b8', fontSize: '1.1rem', marginTop: '0.5rem' }}>Let's stay productive today.</p>
-        </motion.header>
-
-
-        {/* Stat Cards */}
-        <div className="stat-grid">
-          <StatCard 
-            icon={<i className="fa fa-tasks" style={{ color: '#6366f1', fontSize: 24 }}></i>} 
-            label="Total Tasks" 
-            value={totalTasks}
-            delay={0.1}
-          />
-          <StatCard 
-            icon={<i className="fa fa-check-circle" style={{ color: '#10b981', fontSize: 24 }}></i>} 
-            label="Completed" 
-            value={completedTasks}
-            delay={0.2}
-          />
-          <StatCard 
-            icon={<i className="fa fa-clock" style={{ color: '#f59e0b', fontSize: 24 }}></i>} 
-            label="Pending" 
-            value={pendingTasks}
-            delay={0.3}
-          />
-          <StatCard 
-            icon={<i className="fa fa-bolt" style={{ color: '#a855f7', fontSize: 24 }}></i>} 
-            label="Efficiency" 
-            value={efficiency + '%'}
-            delay={0.4}
-          />
-        </div>
-
-
-        {/* Charts Section */}
-        <div className="chart-grid">
-          {/* Weekly Task Progress (Line Chart) */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4 }}
-            className="glass-card"
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 'semibold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <i className="fa fa-line-chart" style={{ color: '#6366f1' }}></i> Weekly Task Progress
-              </h3>
+    <div className="dashboard-container">
+      <div className="dashboard-shell">
+        <aside className="dashboard-sidebar">
+          <div className="sidebar-brand">
+            <span className="sidebar-brand-icon">🧠</span>
+            <div>
+              <h2>StudyAI</h2>
+              <p>Smart study dashboard</p>
             </div>
-            <div style={{ width: '100%', height: 300 }}>
-              <ResponsiveContainer>
-                <LineChart data={[
-                  { day: 'Mon', Completed: 2, Pending: 1 },
-                  { day: 'Tue', Completed: 1, Pending: 2 },
-                  { day: 'Wed', Completed: 3, Pending: 1 },
-                  { day: 'Thu', Completed: 2, Pending: 1 },
-                  { day: 'Fri', Completed: 1, Pending: 1 },
-                  { day: 'Sat', Completed: 2, Pending: 1 },
-                  { day: 'Sun', Completed: 2, Pending: 1 },
-                ]}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                  <XAxis dataKey="day" stroke="#94a3b8" fontSize={12} />
-                  <YAxis stroke="#94a3b8" fontSize={12} />
-                  <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none' }} />
-                  <Line type="monotone" dataKey="Completed" stroke="#10b981" strokeWidth={3} dot={{ r: 5 }} />
-                  <Line type="monotone" dataKey="Pending" stroke="#6366f1" strokeWidth={3} dot={{ r: 5 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </motion.div>
+          </div>
 
-          {/* Task Overview (Donut Chart) */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5 }}
-            className="glass-card"
-          >
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 'semibold', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <i className="fa fa-pie-chart" style={{ color: '#a855f7' }}></i> Task Overview
-            </h3>
-            <div style={{ width: '100%', height: 300, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
-                  <Pie
-                    data={donutData}
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
-                    nameKey="name"
-                  >
-                    {donutData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-              <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-                <span style={{ fontSize: '2rem', fontWeight: 'bold', color: '#10b981' }}>{taskCompletionPct}%</span>
-                <div style={{ color: '#94a3b8', fontSize: '1rem' }}>Completed</div>
-                <div style={{ color: '#22c55e', fontWeight: 'bold', marginTop: '0.5rem' }}>Great progress!<br />Keep it up, Scholar! 🚀</div>
+          <div className="sidebar-menu">
+            {SIDEBAR_ITEMS.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`sidebar-menu-item ${activeSection === item.id ? 'active' : ''}`}
+                onClick={() => handleSidebarNav(item)}
+              >
+                <span>{item.label}</span>
+                <span className="menu-pill">›</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="sidebar-card">
+            <h4>Quick status</h4>
+            <p>{completedTasks}/{totalTasks} completed</p>
+            <p>{pendingTasks} pending</p>
+            <p>{efficiency}% efficiency</p>
+          </div>
+        </aside>
+
+        <main className="dashboard-main">
+          {error && <div className="dashboard-error">{error}</div>}
+
+          <section className="dashboard-header" id="dashboard">
+            <div>
+              <h1>Welcome back, Scholar 👋</h1>
+              <p>Track your task progress, review priorities, and improve your daily study flow.</p>
+            </div>
+            <div className="sidebar-card" style={{ maxWidth: 320 }}>
+              <h4>Today’s summary</h4>
+              <p>{completedTasks} completed</p>
+              <p>{pendingTasks} pending</p>
+              <p>{overdueTasks} overdue</p>
+            </div>
+          </section>
+
+          <div className="stat-grid">
+            <StatCard label="Total Tasks" value={totalTasks} delay={0.1} onClick={() => navigate('/planner')} />
+            <StatCard label="Completed" value={completedTasks} delay={0.15} onClick={() => navigate('/planner')} />
+            <StatCard label="Pending" value={pendingTasks} delay={0.2} onClick={() => navigate('/planner')} />
+            <StatCard label="Efficiency" value={`${efficiency}%`} delay={0.25} onClick={() => navigate('/planner')} />
+          </div>
+
+          <div className="chart-grid">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="glass-card"
+              id="progress"
+              role="button"
+              tabIndex={0}
+              onClick={() => navigate('/planner')}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/planner')}
+              style={{ cursor: 'pointer' }}
+            >
+              <div className="section-title-row">
+                <h3>Weekly Task Progress</h3>
+                <span>{hasWeeklyData ? 'Deadline progress for this week' : 'Overall task progress'}</span>
               </div>
-            </div>
-          </motion.div>
+              <div style={{ width: '100%', height: 280 }}>
+                <ResponsiveContainer>
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.15)" vertical={false} />
+                    <XAxis dataKey="day" tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ backgroundColor: '#111827', border: 'none' }} />
+                    <Line type="monotone" dataKey="Completed" stroke="#10b981" strokeWidth={3} dot={{ r: 4 }} />
+                    <Line type="monotone" dataKey="Pending" stroke="#6366f1" strokeWidth={3} dot={{ r: 4 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
 
-          {/* Subject Breakdown */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.6 }}
-            className="glass-card"
-            style={{ gridColumn: '1 / -1' }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 'semibold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <i className="fa fa-pie-chart" style={{ color: '#38bdf8' }}></i> Subject Performance
-              </h3>
-              <a href="#" style={{ color: '#94a3b8', fontSize: '0.95rem', textDecoration: 'none', cursor: 'pointer' }}>View Detailed Report</a>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1.5rem', justifyItems: 'center' }}>
-              {subjectChartData.map((sub, index) => {
-                const percent = Math.round((sub.value / (subjectTotal || 1)) * 100);
-                return (
-                  <div key={sub.name} style={{ textAlign: 'center', width: '100%' }}>
-                    <div style={{ position: 'relative', width: 120, height: 120, margin: '0 auto 1rem' }}>
-                      <svg width="120" height="120" style={{ transform: 'rotate(-90deg)' }}>
-                        <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" />
-                        <circle 
-                          cx="60" 
-                          cy="60" 
-                          r="50" 
-                          fill="none" 
-                          stroke={sub.color} 
-                          strokeWidth="8"
-                          strokeDasharray={`${(percent / 100) * 314} 314`}
-                          style={{ transition: 'stroke-dasharray 0.5s ease' }}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="glass-card"
+            >
+              <div className="section-title-row">
+                <h3>Task Overview</h3>
+                <span>Completed vs Pending</span>
+              </div>
+              <div style={{ width: '100%', height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+                <ResponsiveContainer width="100%" height={220}>
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: 'Completed', value: completedTasks },
+                        { name: 'Pending', value: pendingTasks },
+                      ]}
+                      innerRadius={70}
+                      outerRadius={90}
+                      paddingAngle={4}
+                      dataKey="value"
+                    >
+                      <Cell fill="#10b981" />
+                      <Cell fill="#6366f1" />
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: '#111827', border: 'none' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '2rem', color: '#fff', fontWeight: '700' }}>{efficiency}%</div>
+                  <div style={{ color: '#94a3b8', marginTop: 4 }}>Task completion rate</div>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="glass-card"
+              style={{ gridColumn: '1 / -1' }}
+            >
+              <div className="section-title-row">
+                <h3>Completion Rings</h3>
+                <span>Visual status for your completed and pending tasks</span>
+              </div>
+              <div className="dashboard-rings-row">
+                {[
+                  {
+                    label: 'Completed',
+                    value: completedTasks,
+                    percent: totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0,
+                    color: '#10b981',
+                  },
+                  {
+                    label: 'Pending',
+                    value: pendingTasks,
+                    percent: totalTasks ? Math.round((pendingTasks / totalTasks) * 100) : 0,
+                    color: '#6366f1',
+                  },
+                ].map((item) => (
+                  <div className="ring-card" key={item.label}>
+                    <div className="ring-chart">
+                      <svg viewBox="0 0 80 80" width="80" height="80">
+                        <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="10" />
+                        <circle
+                          cx="40"
+                          cy="40"
+                          r="32"
+                          fill="none"
+                          stroke={item.color}
+                          strokeWidth="10"
+                          strokeDasharray={`${Math.round((item.percent / 100) * 201)} 201`}
+                          strokeLinecap="round"
+                          transform="rotate(-90 40 40)"
                         />
                       </svg>
-                      <div style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        textAlign: 'center'
-                      }}>
-                        <div style={{ fontSize: '1.6rem', fontWeight: 700, color: '#fff' }}>{percent}%</div>
-                      </div>
+                      <div className="ring-value">{item.percent}%</div>
                     </div>
-                    <div style={{ fontWeight: 600, color: '#fff', marginBottom: '0.35rem' }}>{sub.name}</div>
-                    <div style={{ color: '#94a3b8', fontSize: '0.9rem' }}>↑ 5%</div>
+                    <div className="ring-details">
+                      <div className="ring-count">{item.value}</div>
+                      <div className="ring-label">{item.label}</div>
+                      <div className="ring-percentage">{item.percent}% share</div>
+                    </div>
                   </div>
-                );
-              })}
+                ))}
+              </div>
+            </motion.div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="glass-card"
+            id="tasks"
+            role="button"
+            tabIndex={0}
+            onClick={() => navigate('/planner')}
+            onKeyDown={(e) => e.key === 'Enter' && navigate('/planner')}
+            style={{ cursor: 'pointer' }}
+          >
+            <div className="section-title-row">
+              <h3>Task Section</h3>
+              <span>Click to manage your tasks or add new ones</span>
+            </div>
+            <table className="upcoming-tasks-table">
+              <thead>
+                <tr>
+                  <th>Task</th>
+                  <th>Subject</th>
+                  <th>Priority</th>
+                  <th>Due</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {upcomingTasks.map((task, idx) => (
+                  <tr key={idx}>
+                    <td>{task.task}</td>
+                    <td>{task.subject}</td>
+                    <td>
+                      <span
+                        className={
+                          task.priority === 'High'
+                            ? 'priority-high'
+                            : task.priority === 'Medium'
+                            ? 'priority-medium'
+                            : 'priority-low'
+                        }
+                      >
+                        {task.priority}
+                      </span>
+                    </td>
+                    <td>{task.due}</td>
+                    <td>{task.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.55 }}
+            className="glass-card"
+            id="ai"
+          >
+            <div className="section-title-row">
+              <h3>AI Suggestions</h3>
+              <span>Smart recommendations for your current task set</span>
+            </div>
+            <div className="ai-suggestions-grid">
+              {[
+                {
+                  title: 'Finish urgent work first',
+                  text: `You have ${pendingTasks} pending tasks. Start with the earliest deadline to improve flow.`,
+                },
+                {
+                  title: 'Raise your completion rate',
+                  text:
+                    efficiency >= 60
+                      ? 'Your completion percentage is strong. Keep this steady pace.'
+                      : 'Try to complete one more task today to boost efficiency.',
+                },
+                {
+                  title: 'Avoid overdue buildup',
+                  text:
+                    overdueTasks > 0
+                      ? `There are ${overdueTasks} overdue tasks. Clear one now to reduce pressure.`
+                      : 'No overdue tasks — great discipline! Continue this momentum.',
+                },
+              ].map((suggestion) => (
+                <div key={suggestion.title} className="ai-suggestion-card">
+                  <h4>{suggestion.title}</h4>
+                  <p>{suggestion.text}</p>
+                </div>
+              ))}
             </div>
           </motion.div>
-        </div>
-
-
-        {/* Upcoming Tasks Table */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="glass-card"
-          style={{ marginTop: '2rem' }}
-        >
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 'semibold', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <i className="fa fa-list-alt" style={{ color: '#6366f1' }}></i> Upcoming Tasks
-          </h3>
-          <table className="upcoming-tasks-table">
-            <thead>
-              <tr>
-                <th>Task</th>
-                <th>Subject</th>
-                <th>Priority</th>
-                <th>Due Date</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {upcomingTasks.map((t, idx) => (
-                <tr key={idx}>
-                  <td>{t.task}</td>
-                  <td>{t.subject}</td>
-                  <td>
-                    <span className={
-                      t.priority === 'High' ? 'priority-high' :
-                      t.priority === 'Medium' ? 'priority-medium' : 'priority-low'
-                    }>{t.priority}</span>
-                  </td>
-                  <td>{t.due}</td>
-                  <td>{t.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </motion.div>
-
-        {/* Motivational Footer */}
-        <div style={{ textAlign: 'center', marginTop: '2.5rem', color: '#a5b4fc', fontWeight: 500, fontSize: '1.1rem' }}>
-          <span role="img" aria-label="star">⭐</span> Progress is progress, no matter how small. <span style={{ color: '#38bdf8', fontWeight: 600 }}>Keep pushing forward!</span>
-        </div>
+        </main>
       </div>
     </div>
   );
 };
 
-
-// StatCard for dashboard
-const StatCard = ({ icon, label, value, delay }) => (
-  <motion.div 
-    initial={{ opacity: 0, x: -20 }}
-    animate={{ opacity: 1, x: 0 }}
+const StatCard = ({ label, value, delay, onClick }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
     transition={{ delay }}
     className="glass-card"
-    style={{ minWidth: 0 }}
+    onClick={onClick}
+    onKeyDown={(e) => e.key === 'Enter' && onClick && onClick()}
+    role="button"
+    tabIndex={0}
+    style={{ cursor: onClick ? 'pointer' : 'default' }}
   >
-    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-      <div style={{ padding: '0.75rem', borderRadius: '0.75rem', backgroundColor: 'rgba(255,255,255,0.05)' }}>{icon}</div>
-      <div>
-        <div style={{ color: '#94a3b8', fontSize: '0.875rem' }}>{label}</div>
-        <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{value}</div>
-      </div>
-    </div>
+    <div style={{ color: '#94a3b8', marginBottom: '0.65rem', fontWeight: 600 }}>{label}</div>
+    <div style={{ fontSize: '2rem', fontWeight: 700 }}>{value}</div>
   </motion.div>
 );
 

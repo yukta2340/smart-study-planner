@@ -142,6 +142,33 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.05);
   color: #eef2ff;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.sort-select option {
+  background-color: #1a1f3a;
+  color: #ffffff;
+  padding: 10px;
+}
+
+.sort-select option:hover {
+  background-color: #2a2f4a;
+}
+
+.assistant-form select {
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.assistant-form select option {
+  background-color: #1a1f3a;
+  color: #ffffff;
+  padding: 10px;
+}
+
+.assistant-form select option:hover {
+  background-color: #2a2f4a;
 }
 
 .assistant-container {

@@ -72,9 +72,14 @@ function ProgressChart({ tasks = [] }) {
     return week.map(({ key }) => map[key]);
   }, [tasks]);
 
+  const hasWeeklyTasks = weeklyData.some((d) => d.Completed + d.Pending > 0);
+  const chartData = hasWeeklyTasks
+    ? weeklyData
+    : [{ day: 'All', Completed: completed, Pending: pending }];
+
   const maxVal = Math.max(
     1,
-    ...weeklyData.map((d) => d.Completed + d.Pending)
+    ...chartData.map((d) => d.Completed + d.Pending)
   );
 
   return (
@@ -110,12 +115,16 @@ function ProgressChart({ tasks = [] }) {
       <div className="weekly-graph-wrap">
         <div className="weekly-graph-header">
           <h3 className="weekly-graph-title">📅 Weekly Task Progress</h3>
-          <span className="weekly-graph-sub">Tasks by deadline this week</span>
+          <span className="weekly-graph-sub">
+            {hasWeeklyTasks
+              ? 'Tasks by deadline this week'
+              : 'No deadlines this week — showing overall task status'}
+          </span>
         </div>
 
         <ResponsiveContainer width="100%" height={260}>
           <BarChart
-            data={weeklyData}
+            data={chartData}
             margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
             barCategoryGap="30%"
             barGap={4}
@@ -142,8 +151,8 @@ function ProgressChart({ tasks = [] }) {
             <Legend
               wrapperStyle={{ fontSize: "13px", paddingTop: "12px", color: "var(--text-muted)" }}
             />
-            <Bar dataKey="Completed" fill="#4ecdc4" radius={[6, 6, 0, 0]} maxBarSize={36} />
-            <Bar dataKey="Pending"   fill="#667eea" radius={[6, 6, 0, 0]} maxBarSize={36} />
+            <Bar dataKey="Completed" fill="#667eea" radius={[6, 6, 0, 0]} maxBarSize={36} />
+            <Bar dataKey="Pending"   fill="#4ecdc4" radius={[6, 6, 0, 0]} maxBarSize={36} />
           </BarChart>
         </ResponsiveContainer>
       </div>

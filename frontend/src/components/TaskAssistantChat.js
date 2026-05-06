@@ -21,7 +21,11 @@ function TaskAssistantChat({ tasks = [] }) {
     e.preventDefault();
 
     if (!question.trim()) {
-      alert("Type your question for the AI assistant.");
+      const errorMsg = {
+        role: "assistant",
+        content: "Please type a question before sending.",
+      };
+      setMessages((prev) => [...prev, errorMsg]);
       return;
     }
 
@@ -32,28 +36,40 @@ function TaskAssistantChat({ tasks = [] }) {
       setMessages(nextMessages);
       setQuestion("");
 
-      const { data } = await chatWithAssistant({
+      const response = await chatWithAssistant({
         taskId: selectedTaskId || undefined,
         message: userText,
         history: nextMessages,
       });
 
+      const assistantResponse = response.data?.data?.response || response.data?.response || "No response received from AI.";
+      
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: data?.data?.response || "No response from assistant.",
+          content: assistantResponse,
         },
       ]);
     } catch (error) {
       console.error("Task assistant failed:", error);
-      const serverMessage =
-        error?.response?.data?.message || "AI assistant is unavailable right now. Please try again.";
+      let errorMessage = "AI assistant is unavailable right now. Please try again later.";
+      
+      if (error?.response?.status === 401) {
+        errorMessage = "AI service authentication failed. Please check the server configuration.";
+      } else if (error?.response?.status === 429) {
+        errorMessage = "Too many requests. Please wait a moment and try again.";
+      } else if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: serverMessage,
+          content: `❌ Error: ${errorMessage}`,
         },
       ]);
     } finally {
