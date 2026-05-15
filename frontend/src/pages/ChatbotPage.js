@@ -14,6 +14,21 @@ function ChatbotPage() {
   const { isAuthenticated, user } = useAppAuth();
   const navigate = useNavigate();
 
+  const getStatusKey = (task) => {
+    const status = String(task.status || "").toLowerCase();
+    if (status === "in progress" || status === "inprogress") return "in progress";
+    if (status === "completed") return "completed";
+    if (status === "pending") return "pending";
+    return task.completed ? "completed" : "pending";
+  };
+
+  const taskStats = {
+    total: tasks.length,
+    pending: tasks.filter((task) => getStatusKey(task) === "pending").length,
+    inProgress: tasks.filter((task) => getStatusKey(task) === "in progress").length,
+    completed: tasks.filter((task) => getStatusKey(task) === "completed").length,
+  };
+
   const fetchTasks = async () => {
     if (!isAuthenticated) {
       console.log("⏳ Not authenticated yet, skipping task fetch in ChatbotPage");
@@ -55,7 +70,14 @@ function ChatbotPage() {
         </div>
 
         <div className="chatbot-grid">
-          <div className="assistant-panel">
+            <div className="assistant-panel">
+            <div className="assistant-panel-top">
+              <span className="panel-label">Study Coach</span>
+              <h2>Ask the AI for smarter study steps</h2>
+              <p className="assistant-panel-copy">
+                Select a task, ask a question, and get concise guidance with clearer priorities and planning cues.
+              </p>
+            </div>
             <TaskAssistantChat tasks={tasks} />
           </div>
 
@@ -76,7 +98,27 @@ function ChatbotPage() {
                 </select>
               </div>
             </div>
-            <TaskList tasks={tasks} refreshTasks={fetchTasks} />
+
+            <div className="tasks-panel-stats">
+              <div className="summary-card">
+                <span>Tasks</span>
+                <strong>{taskStats.total}</strong>
+              </div>
+              <div className="summary-card">
+                <span>Pending</span>
+                <strong>{taskStats.pending}</strong>
+              </div>
+              <div className="summary-card">
+                <span>In Progress</span>
+                <strong>{taskStats.inProgress}</strong>
+              </div>
+              <div className="summary-card">
+                <span>Completed</span>
+                <strong>{taskStats.completed}</strong>
+              </div>
+            </div>
+
+            <TaskList tasks={tasks} refreshTasks={fetchTasks} showHeader={false} />
           </div>
         </div>
       </div>

@@ -62,78 +62,143 @@ function ProgressPage() {
           <>
             {error && <div className="error-message">{error}</div>}
 
-            <section className="progress-page-grid">
+            <section className="stat-grid">
               <div className="glass-card">
-                <ProgressChart tasks={tasks} />
+                <div className="metric-card-header">
+                  <span className="metric-icon total-icon">📋</span>
+                  <div>
+                    <p className="metric-label">Total Tasks</p>
+                    <h3>{totalTasks}</h3>
+                  </div>
+                </div>
+                <p className="metric-note">All assigned tasks</p>
+              </div>
+              <div className="glass-card">
+                <div className="metric-card-header">
+                  <span className="metric-icon completed-icon">✅</span>
+                  <div>
+                    <p className="metric-label">Completed</p>
+                    <h3>{completedTasks}</h3>
+                  </div>
+                </div>
+                <p className="metric-note">{totalTasks ? `${Math.round((completedTasks / totalTasks) * 100)}% of total tasks` : 'No tasks yet'}</p>
+              </div>
+              <div className="glass-card">
+                <div className="metric-card-header">
+                  <span className="metric-icon pending-icon">⏳</span>
+                  <div>
+                    <p className="metric-label">Pending</p>
+                    <h3>{pendingTasks}</h3>
+                  </div>
+                </div>
+                <p className="metric-note">{totalTasks ? `${Math.round((pendingTasks / totalTasks) * 100)}% of total tasks` : 'No tasks yet'}</p>
+              </div>
+              <div className="glass-card highlight-card">
+                <div className="metric-card-header">
+                  <span className="metric-icon efficiency-icon">🚀</span>
+                  <div>
+                    <p className="metric-label">Efficiency</p>
+                    <h3>{efficiency}%</h3>
+                  </div>
+                </div>
+                <p className="metric-note">Your productivity score</p>
+              </div>
+            </section>
+
+            <section className="chart-grid">
+              <div className="glass-card">
+                <ProgressChart tasks={tasks} showStats={false} />
               </div>
 
-              <aside className="glass-card progress-summary-card">
-                <div>
-                  <h2 style={{ marginBottom: '1rem' }}>Snapshot</h2>
-                  <div className="progress-summary-list">
-                    <div className="progress-summary-item">
-                      <span>Total tasks</span>
-                      <strong>{totalTasks}</strong>
-                    </div>
-                    <div className="progress-summary-item">
-                      <span>Completed</span>
-                      <strong>{completedTasks}</strong>
-                    </div>
-                    <div className="progress-summary-item">
-                      <span>Pending</span>
-                      <strong>{pendingTasks}</strong>
-                    </div>
-                    <div className="progress-summary-item">
-                      <span>Overall efficiency</span>
+              <div className="glass-card progress-overview-card">
+                <div className="overview-header-row">
+                  <div>
+                    <h2>Task Overview</h2>
+                    <p>Summary of your current progress.</p>
+                  </div>
+                  <button className="nav-link-btn" type="button" onClick={() => navigate('/planner')}>
+                    View All Tasks
+                  </button>
+                </div>
+
+                <div className="progress-donut-card">
+                  <div className="progress-donut" style={{ '--percent': efficiency }}>
+                    <div className="progress-donut-center">
                       <strong>{efficiency}%</strong>
+                      <span>Completed</span>
+                    </div>
+                  </div>
+
+                  <div className="donut-legends">
+                    <div className="donut-legend-item">
+                      <span className="legend-dot completed-dot" />
+                      <div>
+                        <p>Completed</p>
+                        <strong>{completedTasks} ({totalTasks ? `${Math.round((completedTasks / totalTasks) * 100)}%` : '0%'})</strong>
+                      </div>
+                    </div>
+                    <div className="donut-legend-item">
+                      <span className="legend-dot pending-dot" />
+                      <div>
+                        <p>Pending</p>
+                        <strong>{pendingTasks} ({totalTasks ? `${Math.round((pendingTasks / totalTasks) * 100)}%` : '0%'})</strong>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="progress-summary-banner">
-                  <h3>Keep going!</h3>
-                  <p>
-                    Focus on the tasks with the soonest deadlines first, and use this page to monitor your weekly momentum.
-                  </p>
-                  <button className="nav-link-btn" type="button" onClick={() => navigate('/planner#tasks')}>
-                    Review Tasks
-                  </button>
+                <div className="overview-summary-text">
+                  <p>Great progress! Keep it up, Scholar. Focus on the next deadlines to maintain momentum.</p>
                 </div>
-              </aside>
+              </div>
             </section>
 
             <section className="glass-card progress-upcoming-card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem' }}>
+              <div className="progress-upcoming-header">
                 <div>
-                  <h2 style={{ margin: 0 }}>Focus Tasks</h2>
-                  <p style={{ color: '#a5b4fc', margin: '0.5rem 0 0' }}>
-                    Top pending tasks sorted by deadline.
-                  </p>
+                  <h2>Upcoming Tasks</h2>
+                  <p>Pending tasks by deadline.</p>
                 </div>
-                <span style={{ color: '#94a3b8' }}>{topPending.length} tasks</span>
+                <span>{topPending.length} tasks</span>
               </div>
 
               {topPending.length === 0 ? (
-                <p style={{ color: '#cbd5e1' }}>No pending tasks found. Add a new task and watch your progress grow.</p>
+                <p className="empty">No pending tasks found. Add a new task and watch your progress grow.</p>
               ) : (
-                <ul className="progress-task-list">
-                  {topPending.map((task) => (
-                    <li key={task._id} className="progress-task-card">
-                      <div>
-                        <h3>{task.title || task.subject || 'Untitled task'}</h3>
-                        <p>{task.description ? task.description.slice(0, 100) + (task.description.length > 100 ? '...' : '') : 'No task description provided.'}</p>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <span className="priority-pill">{task.difficulty ? `Difficulty ${task.difficulty}/5` : 'No difficulty'}</span>
-                        <p style={{ marginTop: '0.75rem', color: '#94a3b8' }}>
-                          {task.deadline ? new Date(task.deadline).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'No deadline'}
-                        </p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                <div className="progress-task-table-wrapper">
+                  <table className="progress-task-table">
+                    <thead>
+                      <tr>
+                        <th>Task</th>
+                        <th>Subject</th>
+                        <th>Priority</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {topPending.map((task) => (
+                        <tr key={task._id}>
+                          <td className="task-name-cell">
+                            <strong>{task.title || task.subject || 'Untitled task'}</strong>
+                            <span>{task.description ? task.description.slice(0, 80) + (task.description.length > 80 ? '...' : '') : 'No description'}</span>
+                          </td>
+                          <td>{task.subject || 'General'}</td>
+                          <td><span className={`task-chip ${task.priority?.toLowerCase() || 'pending'}`}>{task.priority || 'Medium'}</span></td>
+                          <td>{task.deadline ? new Date(task.deadline).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'No deadline'}</td>
+                          <td><span className="status-chip">Pending</span></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </section>
+
+            <div className="progress-footer-banner">
+              <p>“Progress is progress, no matter how small.” Keep pushing forward!</p>
+            </div>
+          </>
           </>
         )}
       </div>

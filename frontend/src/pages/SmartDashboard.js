@@ -163,6 +163,27 @@ const SmartDashboard = () => {
       status: task.completed ? 'Completed' : 'Pending',
     }));
 
+  const totalStudyMinutes = tasks.reduce((sum, task) => sum + (task.estimatedTime || 60), 0);
+  const totalStudyHours = Math.floor(totalStudyMinutes / 60);
+  const avgDailyMinutes = Math.round(totalStudyMinutes / 7);
+  const avgDailyHours = Math.floor(avgDailyMinutes / 60);
+
+  const totalStudyTimeLabel = `${totalStudyHours}h ${totalStudyMinutes % 60}m`;
+  const avgDailyTimeLabel = `${avgDailyHours}h ${avgDailyMinutes % 60}m`;
+  const currentStreak = 12;
+  const knowledgeLevel = user?.level || 14;
+  const todayGoal = 360;
+
+  const recentActivity = tasks.slice(0, 3).map((task, index) => ({
+    title: task.completed
+      ? `Completed ${task.title || task.subject || 'a task'}`
+      : `Started ${task.title || task.subject || 'a task'}`,
+    subtitle: task.subject || 'General',
+    time: index === 0 ? 'Today, 8:45 PM' : index === 1 ? 'Today, 6:30 PM' : 'Today, 4:15 PM',
+    duration: task.estimatedTime ? `${task.estimatedTime} mins` : '1h 20m',
+    status: task.completed ? 'Completed' : 'In progress',
+  }));
+
   const subjectChartData = useMemo(() => {
     const grouped = tasks.reduce((acc, task) => {
       const label = task.subject || task.title || 'General';
@@ -178,6 +199,11 @@ const SmartDashboard = () => {
   }, [tasks]);
 
   const subjectTotal = subjectChartData.reduce((sum, item) => sum + item.value, 0);
+
+  const subjectPerformance = subjectChartData.slice(0, 4).map((item) => ({
+    ...item,
+    percent: subjectTotal ? Math.round((item.value / subjectTotal) * 100) : 0,
+  }));
 
   const handleSidebarNav = (item) => {
     setActiveSection(item.id);
@@ -251,239 +277,227 @@ const SmartDashboard = () => {
         <main className="dashboard-main">
           {error && <div className="dashboard-error">{error}</div>}
 
-          <section className="dashboard-header" id="dashboard">
+          <section className="dashboard-topbar">
             <div>
               <h1>Welcome back, Scholar 👋</h1>
-              <p>Track your task progress, review priorities, and improve your daily study flow.</p>
+              <p>Your AI has optimized 7 days of study based on your performance.</p>
             </div>
-            <div className="sidebar-card" style={{ maxWidth: 320 }}>
-              <h4>Today’s summary</h4>
-              <p>{completedTasks} completed</p>
-              <p>{pendingTasks} pending</p>
-              <p>{overdueTasks} overdue</p>
+            <div className="dashboard-top-right">
+              <div className="search-box">
+                <span>🔎</span>
+                <input type="text" placeholder="Search anything..." />
+              </div>
+              <div className="profile-summary">
+                <div className="profile-avatar-small">{user?.name?.charAt(0) || 'S'}</div>
+                <div>
+                  <div className="profile-name">{user?.name || user?.email || 'Scholar'}</div>
+                  <div className="profile-level">Level {knowledgeLevel}</div>
+                </div>
+              </div>
             </div>
           </section>
 
-          <div className="stat-grid">
-            <StatCard label="Total Tasks" value={totalTasks} delay={0.1} onClick={() => navigate('/planner')} />
-            <StatCard label="Completed" value={completedTasks} delay={0.15} onClick={() => navigate('/planner')} />
-            <StatCard label="Pending" value={pendingTasks} delay={0.2} onClick={() => navigate('/planner')} />
-            <StatCard label="Efficiency" value={`${efficiency}%`} delay={0.25} onClick={() => navigate('/planner')} />
-          </div>
+          <section className="dashboard-metrics-grid">
+            <div className="metric-card metric-card-primary">
+              <div className="metric-card-icon">🔥</div>
+              <div>
+                <p>Current Streak</p>
+                <h3>{currentStreak} Days</h3>
+                <span>Keep it up!</span>
+              </div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-card-icon">🏆</div>
+              <div>
+                <p>Knowledge Level</p>
+                <h3>Lvl {knowledgeLevel}</h3>
+                <span>2,350 / 3,000 XP</span>
+              </div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-card-icon">🎯</div>
+              <div>
+                <p>Today's Goal</p>
+                <h3>{todayGoal} min</h3>
+                <span>4 Sessions Scheduled</span>
+              </div>
+            </div>
+            <div className="metric-card metric-card-success">
+              <div className="metric-card-icon">🚀</div>
+              <div>
+                <p>Efficiency</p>
+                <h3>{efficiency}%</h3>
+                <span>Your productivity score</span>
+              </div>
+            </div>
+          </section>
 
-          <div className="chart-grid">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="glass-card"
-              id="progress"
-              role="button"
-              tabIndex={0}
-              onClick={() => navigate('/planner')}
-              onKeyDown={(e) => e.key === 'Enter' && navigate('/planner')}
-              style={{ cursor: 'pointer' }}
-            >
-              <div className="section-title-row">
-                <h3>Weekly Task Progress</h3>
-                <span>{hasWeeklyData ? 'Deadline progress for this week' : 'Overall task progress'}</span>
-              </div>
-              <div style={{ width: '100%', height: 280 }}>
-                <ResponsiveContainer>
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.15)" vertical={false} />
-                    <XAxis dataKey="day" tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={{ backgroundColor: '#111827', border: 'none' }} />
-                    <Line type="monotone" dataKey="Completed" stroke="#10b981" strokeWidth={3} dot={{ r: 4 }} />
-                    <Line type="monotone" dataKey="Pending" stroke="#6366f1" strokeWidth={3} dot={{ r: 4 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="glass-card"
-            >
-              <div className="section-title-row">
-                <h3>Task Overview</h3>
-                <span>Completed vs Pending</span>
-              </div>
-              <div style={{ width: '100%', height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-                <ResponsiveContainer width="100%" height={220}>
-                  <PieChart>
-                    <Pie
-                      data={[
-                        { name: 'Completed', value: completedTasks },
-                        { name: 'Pending', value: pendingTasks },
-                      ]}
-                      innerRadius={70}
-                      outerRadius={90}
-                      paddingAngle={4}
-                      dataKey="value"
-                    >
-                      <Cell fill="#10b981" />
-                      <Cell fill="#6366f1" />
-                    </Pie>
-                    <Tooltip contentStyle={{ backgroundColor: '#111827', border: 'none' }} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '2rem', color: '#fff', fontWeight: '700' }}>{efficiency}%</div>
-                  <div style={{ color: '#94a3b8', marginTop: 4 }}>Task completion rate</div>
+          <section className="dashboard-body-grid">
+            <div className="dashboard-left">
+              <div className="glass-card weekly-productivity-card">
+                <div className="section-title-row">
+                  <h3>Weekly Productivity</h3>
+                  <span>This Week</span>
+                </div>
+                <div style={{ width: '100%', height: 300 }}>
+                  <ResponsiveContainer>
+                    <LineChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.15)" vertical={false} />
+                      <XAxis dataKey="day" tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} axisLine={false} tickLine={false} />
+                      <Tooltip contentStyle={{ backgroundColor: '#111827', border: 'none' }} />
+                      <Line type="monotone" dataKey="Completed" stroke="#7c3aed" strokeWidth={3} dot={{ r: 4 }} />
+                      <Line type="monotone" dataKey="Pending" stroke="#38bdf8" strokeWidth={3} dot={{ r: 4 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
-            </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="glass-card"
-              style={{ gridColumn: '1 / -1' }}
-            >
-              <div className="section-title-row">
-                <h3>Completion Rings</h3>
-                <span>Visual status for your completed and pending tasks</span>
-              </div>
-              <div className="dashboard-rings-row">
-                {[
-                  {
-                    label: 'Completed',
-                    value: completedTasks,
-                    percent: totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0,
-                    color: '#10b981',
-                  },
-                  {
-                    label: 'Pending',
-                    value: pendingTasks,
-                    percent: totalTasks ? Math.round((pendingTasks / totalTasks) * 100) : 0,
-                    color: '#6366f1',
-                  },
-                ].map((item) => (
-                  <div className="ring-card" key={item.label}>
-                    <div className="ring-chart">
-                      <svg viewBox="0 0 80 80" width="80" height="80">
-                        <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="10" />
-                        <circle
-                          cx="40"
-                          cy="40"
-                          r="32"
-                          fill="none"
-                          stroke={item.color}
-                          strokeWidth="10"
-                          strokeDasharray={`${Math.round((item.percent / 100) * 201)} 201`}
-                          strokeLinecap="round"
-                          transform="rotate(-90 40 40)"
-                        />
-                      </svg>
-                      <div className="ring-value">{item.percent}%</div>
+              <div className="subject-performance-grid">
+                {subjectPerformance.map((subject) => (
+                  <div key={subject.name} className="glass-card subject-performance-card">
+                    <div className="subject-performance-ring" style={{ background: `conic-gradient(${subject.color} ${subject.percent * 3.6}deg, rgba(255,255,255,0.08) 0deg)` }}>
+                      <span>{subject.percent}%</span>
                     </div>
-                    <div className="ring-details">
-                      <div className="ring-count">{item.value}</div>
-                      <div className="ring-label">{item.label}</div>
-                      <div className="ring-percentage">{item.percent}% share</div>
+                    <div>
+                      <p>{subject.name}</p>
+                      <strong>{subject.percent}%</strong>
+                      <span>{subject.value} tasks</span>
                     </div>
                   </div>
                 ))}
               </div>
-            </motion.div>
-          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="glass-card"
-            id="tasks"
-            role="button"
-            tabIndex={0}
-            onClick={() => navigate('/planner')}
-            onKeyDown={(e) => e.key === 'Enter' && navigate('/planner')}
-            style={{ cursor: 'pointer' }}
-          >
-            <div className="section-title-row">
-              <h3>Task Section</h3>
-              <span>Click to manage your tasks or add new ones</span>
-            </div>
-            <table className="upcoming-tasks-table">
-              <thead>
-                <tr>
-                  <th>Task</th>
-                  <th>Subject</th>
-                  <th>Priority</th>
-                  <th>Due</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {upcomingTasks.map((task, idx) => (
-                  <tr key={idx}>
-                    <td>{task.task}</td>
-                    <td>{task.subject}</td>
-                    <td>
-                      <span
-                        className={
-                          task.priority === 'High'
-                            ? 'priority-high'
-                            : task.priority === 'Medium'
-                            ? 'priority-medium'
-                            : 'priority-low'
-                        }
-                      >
-                        {task.priority}
-                      </span>
-                    </td>
-                    <td>{task.due}</td>
-                    <td>{task.status}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.55 }}
-            className="glass-card"
-            id="ai"
-          >
-            <div className="section-title-row">
-              <h3>AI Suggestions</h3>
-              <span>Smart recommendations for your current task set</span>
-            </div>
-            <div className="ai-suggestions-grid">
-              {[
-                {
-                  title: 'Finish urgent work first',
-                  text: `You have ${pendingTasks} pending tasks. Start with the earliest deadline to improve flow.`,
-                },
-                {
-                  title: 'Raise your completion rate',
-                  text:
-                    efficiency >= 60
-                      ? 'Your completion percentage is strong. Keep this steady pace.'
-                      : 'Try to complete one more task today to boost efficiency.',
-                },
-                {
-                  title: 'Avoid overdue buildup',
-                  text:
-                    overdueTasks > 0
-                      ? `There are ${overdueTasks} overdue tasks. Clear one now to reduce pressure.`
-                      : 'No overdue tasks — great discipline! Continue this momentum.',
-                },
-              ].map((suggestion) => (
-                <div key={suggestion.title} className="ai-suggestion-card">
-                  <h4>{suggestion.title}</h4>
-                  <p>{suggestion.text}</p>
+              <div className="recent-grid">
+                <div className="glass-card recent-activity-card">
+                  <div className="section-title-row">
+                    <h3>Recent Activity</h3>
+                    <span>Latest study moves</span>
+                  </div>
+                  <div className="activity-list">
+                    {recentActivity.map((item) => (
+                      <div key={item.title} className="activity-item">
+                        <div>
+                          <strong>{item.title}</strong>
+                          <p>{item.subtitle}</p>
+                        </div>
+                        <div>
+                          <span>{item.time}</span>
+                          <strong>{item.duration}</strong>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
+
+                <div className="glass-card study-insights-card">
+                  <div className="section-title-row">
+                    <h3>Study Insights</h3>
+                    <span>Smart learning tips</span>
+                  </div>
+                  <div className="insights-list">
+                    <div className="insight-item">
+                      <strong>Most Productive Day</strong>
+                      <span>Friday</span>
+                    </div>
+                    <div className="insight-item">
+                      <strong>Most Productive Time</strong>
+                      <span>7 PM - 10 PM</span>
+                    </div>
+                    <div className="insight-item">
+                      <strong>Preferred Study Mode</strong>
+                      <span>Deep Focus</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="glass-card quick-stats-card">
+                  <div className="section-title-row">
+                    <h3>Quick Stats</h3>
+                    <span>Snapshot metrics</span>
+                  </div>
+                  <div className="stats-list">
+                    <div className="stats-row">
+                      <span>Total Study Time</span>
+                      <strong>{totalStudyTimeLabel}</strong>
+                    </div>
+                    <div className="stats-row">
+                      <span>Tasks Completed</span>
+                      <strong>{completedTasks} / {totalTasks}</strong>
+                    </div>
+                    <div className="stats-row">
+                      <span>Tests Taken</span>
+                      <strong>12</strong>
+                    </div>
+                    <div className="stats-row">
+                      <span>Accuracy</span>
+                      <strong>{efficiency}%</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </motion.div>
+
+            <aside className="dashboard-right">
+              <div className="glass-card ai-suggestions-panel">
+                <div className="section-title-row">
+                  <h3>AI Suggestions</h3>
+                  <button type="button" className="view-all-btn">View All</button>
+                </div>
+                <div className="ai-suggestions-grid">
+                  {[
+                    {
+                      title: 'Focus on Data Structures',
+                      text: "You're spending less time on Data Structures. Increase focus for better results.",
+                      action: 'Focus Now',
+                    },
+                    {
+                      title: 'Optimize Study Time',
+                      text: 'You study best between 7PM - 10PM. Plan more sessions in this slot.',
+                      action: 'Adjust Plan',
+                    },
+                    {
+                      title: 'Revise Operating Systems',
+                      text: 'Your retention rate is low in OS topics. Quick revision recommended.',
+                      action: 'Start Revision',
+                    },
+                    {
+                      title: 'Take a Mock Test',
+                      text: 'You’re exam-ready! Take a mock test to evaluate your preparation.',
+                      action: 'Start Test',
+                    },
+                  ].map((suggestion) => (
+                    <div key={suggestion.title} className="ai-suggestion-card">
+                      <h4>{suggestion.title}</h4>
+                      <p>{suggestion.text}</p>
+                      <button type="button" className="suggestion-action-btn">{suggestion.action}</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="glass-card upcoming-schedule-panel">
+                <div className="section-title-row">
+                  <h3>Upcoming Schedule</h3>
+                  <button type="button" className="view-all-btn">View Calendar</button>
+                </div>
+                <div className="schedule-list">
+                  {upcomingTasks.map((task, idx) => (
+                    <div key={idx} className="schedule-item">
+                      <div className="schedule-meta">
+                        <strong>{task.task}</strong>
+                        <span>{task.subject}</span>
+                      </div>
+                      <div className="schedule-time">
+                        <span>{task.due}</span>
+                        <span className="schedule-badge">{task.status === 'Completed' ? 'Done' : task.due.startsWith('Today') ? 'Today' : 'Tomorrow'}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </aside>
+          </section>
         </main>
       </div>
     </div>

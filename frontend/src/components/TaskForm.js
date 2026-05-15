@@ -7,18 +7,18 @@ function TaskForm({ refreshTasks }) {
     subject: "",
     description: "",
     deadline: "",
-    difficulty: "",
+    priority: "Medium",
   });
   const [taskImage, setTaskImage] = useState(null);
   const [markUploadedAsCompleted, setMarkUploadedAsCompleted] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // ✅ Basic validation
-    if (!form.subject || !form.deadline || !form.difficulty) {
-      alert("Please fill title, deadline, and difficulty");
+    if (!form.subject || !form.deadline) {
+      alert("Please fill subject and deadline.");
       return;
     }
 
@@ -27,22 +27,19 @@ function TaskForm({ refreshTasks }) {
         title: form.subject,
         description: form.description,
         deadline: form.deadline,
-        difficulty: form.difficulty,
+        priority: form.priority,
       });
 
       alert("Task Added ✅");
 
-      // Reset form
       setForm({
         subject: "",
         description: "",
         deadline: "",
-        difficulty: "",
+        priority: "Medium",
       });
 
-      // Refresh list (if passed)
       if (refreshTasks) refreshTasks();
-
     } catch (err) {
       console.error(err);
       const msg =
@@ -82,63 +79,89 @@ function TaskForm({ refreshTasks }) {
         <p>Add your task details here and keep your study plan on track.</p>
       </div>
 
-      <form onSubmit={handleSubmit}>
-
-        <input
-          type="text"
-          placeholder="Task Title (e.g. Read Chapter 4)"
-          value={form.subject}
-          onChange={(e) =>
-            setForm({ ...form, subject: e.target.value })
-          }
-        />
-
-        <textarea
-          placeholder="Description (optional)"
-          value={form.description}
-          onChange={(e) =>
-            setForm({ ...form, description: e.target.value })
-          }
-          rows="3"
-        />
-
-        <div className="deadline-field">
-          <label htmlFor="task-deadline">Deadline</label>
+      <form onSubmit={handleSubmit} className="task-form">
+        <div className="task-form-field">
+          <label htmlFor="task-subject">Subject (e.g. Math)</label>
           <input
-            id="task-deadline"
-            type="datetime-local"
-            value={form.deadline}
-            onChange={(e) =>
-              setForm({ ...form, deadline: e.target.value })
-            }
+            id="task-subject"
+            type="text"
+            placeholder="Enter subject"
+            value={form.subject}
+            onChange={(e) => setForm({ ...form, subject: e.target.value })}
           />
         </div>
 
-        <input
-          type="number"
-          placeholder="Difficulty (1-5)"
-          min="1"
-          max="5"
-          value={form.difficulty}
-          onChange={(e) =>
-            setForm({ ...form, difficulty: e.target.value })
-          }
-        />
+        <div className="task-form-field">
+          <label htmlFor="task-description">Description (optional)</label>
+          <textarea
+            id="task-description"
+            placeholder="Enter task description..."
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            rows="4"
+          />
+        </div>
 
-        <button type="submit">Add Task</button>
+        <div className="task-form-row">
+          <div className="task-form-field">
+            <label htmlFor="task-deadline">Deadline</label>
+            <input
+              id="task-deadline"
+              type="datetime-local"
+              value={form.deadline}
+              onChange={(e) => setForm({ ...form, deadline: e.target.value })}
+            />
+          </div>
+
+          <div className="task-form-field">
+            <label htmlFor="task-priority">Priority</label>
+            <select
+              id="task-priority"
+              value={form.priority}
+              onChange={(e) => setForm({ ...form, priority: e.target.value })}
+            >
+              <option value="High">High Priority</option>
+              <option value="Medium">Medium Priority</option>
+              <option value="Low">Low Priority</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" className="primary-btn">Add Task</button>
       </form>
 
       <div className="task-image-upload">
         <h3>Upload Task Pic (AI OCR)</h3>
-        <p>
-          Upload a photo/screenshot of your task. The system reads it and adds it to your task list automatically.
+        <p className="upload-copy">
+          Drag and drop a task image or click to upload. Supported formats: PNG, JPG, JPEG.
         </p>
 
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setTaskImage(e.target.files?.[0] || null)}
-        />
+        <div
+          className={`upload-dropzone ${dragActive ? "active" : ""}`}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragActive(true);
+          }}
+          onDragLeave={(e) => {
+            e.preventDefault();
+            setDragActive(false);
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragActive(false);
+            const file = e.dataTransfer?.files?.[0];
+            if (file) setTaskImage(file);
+          }}
+        >
+          <span className="upload-dropzone-text">
+            {taskImage ? taskImage.name : "Drag & drop or click to upload"}
+          </span>
+          <input
+            type="file"
+            accept="image/png, image/jpeg, image/jpg"
+            onChange={(e) => setTaskImage(e.target.files?.[0] || null)}
+          />
+        </div>
 
         <label className="upload-completed-check">
           <input
@@ -152,6 +175,7 @@ function TaskForm({ refreshTasks }) {
 
         <button
           type="button"
+          className="secondary-btn"
           onClick={handleImageUpload}
           disabled={isUploadingImage}
         >

@@ -47,7 +47,7 @@ function CustomTooltip({ active, payload, label }) {
   );
 }
 
-function ProgressChart({ tasks = [] }) {
+function ProgressChart({ tasks = [], showStats = true }) {
   const total     = tasks.length;
   const completed = tasks.filter((t) => t.completed).length;
   const pending   = total - completed;
@@ -86,32 +86,33 @@ function ProgressChart({ tasks = [] }) {
     <div className="progress-container">
       <h2>📊 Progress Tracker</h2>
 
-      {/* Stat boxes */}
-      <div className="progress-grid">
-        <div className="progress-box">
-          <h3>Total Tasks</h3>
-          <p>{total}</p>
-        </div>
-        <div className="progress-box">
-          <h3>Completed</h3>
-          <p>{completed}</p>
-        </div>
-        <div className="progress-box">
-          <h3>Pending</h3>
-          <p>{pending}</p>
-        </div>
-        <div className="progress-box highlight">
-          <h3>Efficiency</h3>
-          <p>{efficiency}%</p>
-        </div>
-      </div>
+      {showStats && (
+        <>
+          <div className="progress-grid">
+            <div className="progress-box">
+              <h3>Total Tasks</h3>
+              <p>{total}</p>
+            </div>
+            <div className="progress-box">
+              <h3>Completed</h3>
+              <p>{completed}</p>
+            </div>
+            <div className="progress-box">
+              <h3>Pending</h3>
+              <p>{pending}</p>
+            </div>
+            <div className="progress-box highlight">
+              <h3>Efficiency</h3>
+              <p>{efficiency}%</p>
+            </div>
+          </div>
 
-      {/* Overall progress bar */}
-      <div className="progress-bar">
-        <div className="progress-fill" style={{ width: `${efficiency}%` }} />
-      </div>
+          <div className="progress-bar">
+            <div className="progress-fill" style={{ width: `${efficiency}%` }} />
+          </div>
+        </>
+      )}
 
-      {/* Weekly graph */}
       <div className="weekly-graph-wrap">
         <div className="weekly-graph-header">
           <h3 className="weekly-graph-title">📅 Weekly Task Progress</h3>
