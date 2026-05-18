@@ -8,8 +8,14 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Planner from "./pages/Planner";
 import ProgressPage from "./pages/ProgressPage";
+import PerformancePage from "./pages/PerformancePage";
+import StudyInsightsPage from "./pages/StudyInsightsPage";
+import ProfilePage from "./pages/ProfilePage";
 import ChatbotPage from "./pages/ChatbotPage";
 import SmartDashboard from "./pages/SmartDashboard";
+import NotesPage from "./pages/NotesPage";
+import FlashcardsPage from "./pages/FlashcardsPage";
+import ResourcesPage from "./pages/ResourcesPage";
 
 // Auth Protection
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -53,6 +59,60 @@ function AppContent() {
         element={
           <ProtectedRoute>
             <ProgressPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/performance"
+        element={
+          <ProtectedRoute>
+            <PerformancePage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/study-insights"
+        element={
+          <ProtectedRoute>
+            <StudyInsightsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/notes"
+        element={
+          <ProtectedRoute>
+            <NotesPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/flashcards"
+        element={
+          <ProtectedRoute>
+            <FlashcardsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/resources"
+        element={
+          <ProtectedRoute>
+            <ResourcesPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
           </ProtectedRoute>
         }
       />

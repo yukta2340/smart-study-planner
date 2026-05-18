@@ -17,7 +17,6 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
-  const [credentialsVerified, setCredentialsVerified] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
@@ -29,13 +28,12 @@ function Login() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleVerifyCredentials = async (e) => {
-    e.preventDefault();
+  const handleSendLoginOTP = async () => {
     setError("");
     setStatusMessage("");
 
     if (!formData.email || !formData.password) {
-      setError("Please enter email and password first");
+      setError("Please enter your email and password.");
       return;
     }
 
@@ -45,40 +43,15 @@ function Login() {
         email: formData.email.trim().toLowerCase(),
         password: formData.password,
       });
-
-      setCredentialsVerified(true);
-      setStatusMessage("Credentials verified. Click Send OTP to continue.");
-    } catch (err) {
-      setError(err.response?.data?.message || "Invalid email or password");
-    } finally {
-      setVerifying(false);
-    }
-  };
-
-  const handleSendOTP = async (e) => {
-    e.preventDefault();
-    setError("");
-    setStatusMessage("");
-
-    if (!credentialsVerified) {
-      setError("Please verify your email and password before sending OTP.");
-      return;
-    }
-
-    setSendingOtp(true);
-    try {
-      const response = await sendOTP(formData.email.trim().toLowerCase());
-      setStatusMessage("OTP sent successfully. Enter it below to log in.");
+      await sendOTP(formData.email.trim().toLowerCase());
+      setStatusMessage("OTP sent. Enter it below to complete login.");
       setStep("otp");
     } catch (err) {
       setError(
-        err.response?.data?.message ||
-          err.response?.data?.error ||
-          err.message ||
-          "Failed to send OTP"
+        err.response?.data?.message || err.response?.data?.error || err.message || "Failed to send OTP"
       );
     } finally {
-      setSendingOtp(false);
+      setVerifying(false);
     }
   };
 
@@ -158,213 +131,208 @@ function Login() {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <h2>Login to Smart Study Planner</h2>
+    <div className="auth-page">
+      <div className="auth-container">
+        <div className="auth-card" style={{ maxWidth: 560, width: '100%' }}>
+          <div className="auth-card-header">
+            <h2 className="auth-title">Welcome Back!</h2>
+            <p className="auth-subtitle">Login to continue your learning journey</p>
+          </div>
 
-        {step === "credentials" && (
-          <form>
-            <div className="form-group">
-              <label>Email</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                placeholder="Enter your email"
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Password</label>
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                placeholder="Enter your password"
-              />
-              <label className="show-password-toggle">
+          {step === "credentials" && (
+            <form>
+              <div className="form-group">
+                <label>Email</label>
                 <input
-                  type="checkbox"
-                  checked={showPassword}
-                  onChange={() => setShowPassword((prev) => !prev)}
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter your email or phone number"
                 />
-                Show password
-              </label>
-            </div>
+              </div>
 
-            {statusMessage && <div className="success-message">{statusMessage}</div>}
-            {error && <div className="error-message">{error}</div>}
+              <div className="form-group">
+                <label>Password</label>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter your password"
+                />
+                <label className="show-password-toggle">
+                  <input
+                    type="checkbox"
+                    checked={showPassword}
+                    onChange={() => setShowPassword((prev) => !prev)}
+                  />
+                  Show password
+                </label>
+              </div>
 
-            <div className="button-group">
-              <button
-                type="button"
-                className="auth-btn"
-                onClick={handleVerifyCredentials}
-                disabled={verifying || loading}
-              >
-                {verifying ? "Verifying..." : "Verify Credentials"}
+              {statusMessage && <div className="success-message">{statusMessage}</div>}
+              {error && <div className="error-message">{error}</div>}
+
+              <div className="button-group">
+                <button
+                  type="button"
+                  className="auth-btn"
+                  onClick={handleSendLoginOTP}
+                  disabled={verifying || loading}
+                >
+                  {verifying ? "Sending OTP..." : "Login"}
+                </button>
+              </div>
+
+              <div className="auth-links" style={{ marginTop: 12 }}>
+                <button
+                  type="button"
+                  className="forgot-password-link"
+                  onClick={() => setStep("forgotPassword")}
+                  disabled={loading}
+                >
+                  Forgot Password?
+                </button>
+                <div style={{ marginTop: 8 }}>
+                  Don't have an account? <Link to="/register">Sign up</Link>
+                </div>
+              </div>
+            </form>
+          )}
+
+          {step === "otp" && (
+            <form onSubmit={handleLogin}>
+              <div className="otp-instructions">
+                <p>OTP sent to {formData.email}</p>
+                <p>Enter the 6-digit code to login</p>
+              </div>
+
+              <div className="form-group">
+                <label>OTP Code</label>
+                <input
+                  type="text"
+                  name="otp"
+                  value={formData.otp}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter 6-digit OTP"
+                  maxLength="6"
+                />
+              </div>
+
+              {error && <div className="error-message">{error}</div>}
+
+              <button type="submit" className="auth-btn" disabled={loading}>
+                {loading ? "Logging in..." : "Login"}
               </button>
 
               <button
                 type="button"
                 className="auth-btn secondary"
-                onClick={handleSendOTP}
-                disabled={!credentialsVerified || sendingOtp || verifying || loading}
+                onClick={() => setStep("credentials")}
+                disabled={loading}
               >
-                {sendingOtp ? "Sending OTP..." : "Send OTP"}
+                Back
               </button>
-            </div>
-          </form>
-        )}
+            </form>
+          )}
 
-        {step === "otp" && (
-          <form onSubmit={handleLogin}>
-            <div className="otp-instructions">
-              <p>OTP sent to {formData.email}</p>
-              <p>Enter the 6-digit code to login</p>
-            </div>
+          {step === "forgotPassword" && (
+            <form onSubmit={handleForgotPassword}>
+              <div className="form-instructions">
+                <p>Enter your email address and we'll send you an OTP to reset your password.</p>
+              </div>
 
-            <div className="form-group">
-              <label>OTP Code</label>
-              <input
-                type="text"
-                name="otp"
-                value={formData.otp}
-                onChange={handleChange}
-                required
-                placeholder="Enter 6-digit OTP"
-                maxLength="6"
-              />
-            </div>
+              <div className="form-group">
+                <label>Email</label>
+                <input
+                  type="email"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  required
+                  placeholder="Enter your email"
+                />
+              </div>
 
-            {error && <div className="error-message">{error}</div>}
+              {statusMessage && <div className="success-message">{statusMessage}</div>}
+              {error && <div className="error-message">{error}</div>}
 
-            <button type="submit" className="auth-btn" disabled={loading}>
-              {loading ? "Logging in..." : "Login"}
-            </button>
+              <button type="submit" className="auth-btn" disabled={sendingOtp}>
+                {sendingOtp ? "Sending OTP..." : "Send Reset OTP"}
+              </button>
 
-            <button
-              type="button"
-              className="auth-btn secondary"
-              onClick={() => setStep("credentials")}
-              disabled={loading}
-            >
-              Back
-            </button>
-          </form>
-        )}
+              <button
+                type="button"
+                className="auth-btn secondary"
+                onClick={() => setStep("credentials")}
+                disabled={sendingOtp}
+              >
+                Back to Login
+              </button>
+            </form>
+          )}
 
-        {step === "forgotPassword" && (
-          <form onSubmit={handleForgotPassword}>
-            <div className="form-instructions">
-              <p>Enter your email address and we'll send you an OTP to reset your password.</p>
-            </div>
+          {step === "resetPassword" && (
+            <form onSubmit={handleResetPassword}>
+              <div className="form-instructions">
+                <p>Enter the OTP sent to {resetEmail} and your new password.</p>
+              </div>
 
-            <div className="form-group">
-              <label>Email</label>
-              <input
-                type="email"
-                value={resetEmail}
-                onChange={(e) => setResetEmail(e.target.value)}
-                required
-                placeholder="Enter your email"
-              />
-            </div>
+              <div className="form-group">
+                <label>OTP Code</label>
+                <input
+                  type="text"
+                  value={resetToken}
+                  onChange={(e) => setResetToken(e.target.value)}
+                  required
+                  placeholder="Enter 6-digit OTP"
+                  maxLength="6"
+                />
+              </div>
 
-            {statusMessage && <div className="success-message">{statusMessage}</div>}
-            {error && <div className="error-message">{error}</div>}
+              <div className="form-group">
+                <label>New Password</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  placeholder="Enter new password"
+                />
+              </div>
 
-            <button type="submit" className="auth-btn" disabled={sendingOtp}>
-              {sendingOtp ? "Sending OTP..." : "Send Reset OTP"}
-            </button>
+              <div className="form-group">
+                <label>Confirm New Password</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  placeholder="Confirm new password"
+                />
+              </div>
 
-            <button
-              type="button"
-              className="auth-btn secondary"
-              onClick={() => setStep("credentials")}
-              disabled={sendingOtp}
-            >
-              Back to Login
-            </button>
-          </form>
-        )}
+              {statusMessage && <div className="success-message">{statusMessage}</div>}
+              {error && <div className="error-message">{error}</div>}
 
-        {step === "resetPassword" && (
-          <form onSubmit={handleResetPassword}>
-            <div className="form-instructions">
-              <p>Enter the OTP sent to {resetEmail} and your new password.</p>
-            </div>
+              <button type="submit" className="auth-btn">
+                Reset Password
+              </button>
 
-            <div className="form-group">
-              <label>OTP Code</label>
-              <input
-                type="text"
-                value={resetToken}
-                onChange={(e) => setResetToken(e.target.value)}
-                required
-                placeholder="Enter 6-digit OTP"
-                maxLength="6"
-              />
-            </div>
-
-            <div className="form-group">
-              <label>New Password</label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-                placeholder="Enter new password"
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Confirm New Password</label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                placeholder="Confirm new password"
-              />
-            </div>
-
-            {statusMessage && <div className="success-message">{statusMessage}</div>}
-            {error && <div className="error-message">{error}</div>}
-
-            <button type="submit" className="auth-btn">
-              Reset Password
-            </button>
-
-            <button
-              type="button"
-              className="auth-btn secondary"
-              onClick={() => setStep("forgotPassword")}
-            >
-              Back
-            </button>
-          </form>
-        )}
-
-        <div className="auth-links">
-          <p>
-            <button
-              type="button"
-              className="forgot-password-link"
-              onClick={() => setStep("forgotPassword")}
-              disabled={loading}
-            >
-              Forgot Password?
-            </button>
-          </p>
-          <p>
-            Don't have an account? <Link to="/register">Register here</Link>
-          </p>
+              <button
+                type="button"
+                className="auth-btn secondary"
+                onClick={() => setStep("forgotPassword")}
+              >
+                Back
+              </button>
+            </form>
+          )}
         </div>
+
       </div>
     </div>
   );

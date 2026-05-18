@@ -15,7 +15,7 @@ const analyticsRoutes = require('./routes/analyticsRoutes');
 const otpRoutes = require('./routes/otpRoutes');
 const initSchedules = require('./utils/scheduler');
 
-dotenv.config({ path: path.resolve(__dirname, '.env') });
+dotenv.config({ path: path.resolve(__dirname, '.env'), override: true });
 connectDB();
 initSchedules();
 

@@ -20,27 +20,17 @@ const sendOTP = async (req, res) => {
 
   // Send real OTP via email
   const sent = await sendOTPEmail(email, otp);
-  const isProduction = process.env.NODE_ENV === 'production';
   const responsePayload = {
     message: 'OTP sent successfully to your email.',
   };
 
-  if (!isProduction) {
-    responsePayload.otp = otp;
-    responsePayload.devHint = 'In development mode, OTP is returned in the response for testing.';
-  }
-
   if (sent) {
-    console.log(`🔐 OTP for ${email}: ${otp}`); // For testing - remove in production
     return res.json(responsePayload);
   }
 
-  if (!isProduction) {
-    console.warn('Email failed but returning OTP in development mode');
-    return res.json({
-      ...responsePayload,
-      warning: 'Email service unavailable. Use the OTP shown here for development.',
-    });
+  if (!process.env.NODE_ENV || process.env.NODE_ENV !== 'production') {
+    console.warn('Email failed and OTP cannot be returned in response. Please fix email delivery or inspect server logs.');
+    return res.status(500).json({ message: 'Failed to send OTP. Please try again later.' });
   }
 
   res.status(500).json({ message: 'Failed to send OTP. Please try again.' });

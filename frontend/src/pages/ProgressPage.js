@@ -199,7 +199,6 @@ function ProgressPage() {
               <p>“Progress is progress, no matter how small.” Keep pushing forward!</p>
             </div>
           </>
-          </>
         )}
       </div>
     </div>

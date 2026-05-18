@@ -23,8 +23,8 @@ const SIDEBAR_SECTIONS = [
     title: 'Study',
     items: [
       { id: 'dashboard', label: 'Dashboard' },
-      { id: 'tasks', label: 'Tasks' },
-      { id: 'progress', label: 'Progress' },
+      { id: 'tasks', label: 'Tasks', path: '/planner' },
+      { id: 'progress', label: 'Progress', path: '/progress' },
       { id: 'calendar', label: 'Calendar', path: '/planner#calendar' },
       { id: 'chatbot', label: 'AI Coach', path: '/chatbot' },
       { id: 'ai', label: 'AI Suggestions', badge: 'New' },
@@ -33,23 +33,23 @@ const SIDEBAR_SECTIONS = [
   {
     title: 'Analytics',
     items: [
-      { id: 'performance', label: 'Performance' },
-      { id: 'studyInsights', label: 'Study Insights' },
+      { id: 'performance', label: 'Performance', path: '/performance' },
+      { id: 'studyInsights', label: 'Study Insights', path: '/study-insights' },
     ],
   },
   {
     title: 'Resources',
     items: [
-      { id: 'notes', label: 'Notes' },
-      { id: 'flashcards', label: 'Flashcards' },
-      { id: 'resources', label: 'Resources' },
+      { id: 'notes', label: 'Notes', path: '/notes' },
+      { id: 'flashcards', label: 'Flashcards', path: '/flashcards' },
+      { id: 'resources', label: 'Resources', path: '/resources' },
     ],
   },
   {
     title: 'Settings',
     items: [
       { id: 'settings', label: 'Settings' },
-      { id: 'profile', label: 'Profile' },
+      { id: 'profile', label: 'Profile', path: '/profile' },
     ],
   },
 ];
@@ -254,16 +254,7 @@ const SmartDashboard = () => {
             </div>
           ))}
 
-          <div className="sidebar-card sidebar-upgrade-card">
-            <div className="sidebar-card-header">
-              <span className="upgrade-label">Upgrade to Pro</span>
-              <span className="upgrade-pill">New</span>
-            </div>
-            <p>Unlock advanced AI insights and personalized study plans.</p>
-            <button type="button" className="upgrade-button" onClick={() => navigate('/planner')}>
-              Upgrade Now
-            </button>
-          </div>
+          {/* Upgrade card removed per request */}
 
           <div className="sidebar-profile-card">
             <div className="sidebar-profile-avatar">{user?.name?.charAt(0) || 'S'}</div>
@@ -322,7 +313,7 @@ const SmartDashboard = () => {
                 <span>4 Sessions Scheduled</span>
               </div>
             </div>
-            <div className="metric-card metric-card-success">
+            <div className="metric-card metric-card-success" onClick={() => navigate('/progress')} style={{ cursor: 'pointer' }}>
               <div className="metric-card-icon">🚀</div>
               <div>
                 <p>Efficiency</p>
@@ -483,7 +474,12 @@ const SmartDashboard = () => {
                 </div>
                 <div className="schedule-list">
                   {upcomingTasks.map((task, idx) => (
-                    <div key={idx} className="schedule-item">
+                    <div
+                      key={idx}
+                      className="schedule-item"
+                      onClick={() => navigate('/planner')}
+                      style={{ cursor: 'pointer' }}
+                    >
                       <div className="schedule-meta">
                         <strong>{task.task}</strong>
                         <span>{task.subject}</span>

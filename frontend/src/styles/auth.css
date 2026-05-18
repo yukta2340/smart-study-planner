@@ -237,6 +237,60 @@
   }
 }
 
+/* Split auth layout (login + register panels) */
+.auth-split {
+  display: flex;
+  gap: 28px;
+  align-items: stretch;
+  justify-content: center;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.auth-panel {
+  flex: 1 1 480px;
+  min-width: 320px;
+  max-width: 560px;
+}
+
+.login-panel .auth-title {
+  color: #9cc7ff;
+}
+
+.register-panel .auth-title {
+  color: #c7b8ff;
+}
+
+.stepper-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.step-pill {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.7);
+  font-weight: 700;
+}
+
+.step-pill.active {
+  background: linear-gradient(135deg,#6366f1,#7c3aed);
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .auth-split {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
 .card {
   border: 1px solid #ddd;
   border-radius: 10px;

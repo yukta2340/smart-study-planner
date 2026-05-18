@@ -2,7 +2,7 @@
 import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { sendOTP } from "../services/api";
+import { sendOTP, verifyOTP } from "../services/api";
 import PasswordStrengthMeter from "../components/PasswordStrengthMeter";
 
 function Register() {
@@ -12,82 +12,103 @@ function Register() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     password: "",
     otp: "",
   });
-  const [step, setStep] = useState("details"); // details, otp
+
+  const [step, setStep] = useState("account"); // account, verify, complete
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
   const [otpSent, setOtpSent] = useState(false);
-  const [devOtp, setDevOtp] = useState("");
+  const [verifying, setVerifying] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSendOTP = async (e) => {
-    e.preventDefault();
+  const handleNextFromAccount = async (e) => {
+    e && e.preventDefault();
     setError("");
-    setStatusMessage("Sending OTP...");
+    setStatusMessage("");
 
     if (!formData.name || !formData.email || !formData.password) {
-      setError("Please fill all fields");
-      setStatusMessage("");
+      setError("Please fill name, email and password to continue");
       return;
     }
 
     if (formData.password.length < 6) {
       setError("Password must be at least 6 characters");
-      setStatusMessage("");
       return;
     }
 
     try {
-      const response = await sendOTP(formData.email.trim().toLowerCase());
+      setStatusMessage("Sending verification OTP...");
+      await sendOTP(formData.email.trim().toLowerCase());
       setOtpSent(true);
-      setStep("otp");
-      setDevOtp(response.data?.otp || "");
-      if (response.data?.otp) {
-        setStatusMessage(`OTP sent. Use ${response.data.otp} for development testing.`);
-      } else {
-        setStatusMessage("OTP sent successfully. Enter it below to complete registration.");
-      }
+      setStatusMessage("OTP sent. Enter the code to verify your email.");
+      setStep("verify");
     } catch (err) {
       setStatusMessage("");
       setError(
-        err.response?.data?.message ||
-          err.response?.data?.error ||
-          err.message ||
-          "Failed to send OTP"
+        err.response?.data?.message || err.message || "Failed to send OTP"
       );
     }
   };
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
+  const handleVerifyAndNext = async (e) => {
+    e && e.preventDefault();
     setError("");
+    setStatusMessage("");
 
     if (!formData.otp) {
-      setError("Please enter the OTP");
+      setError("Please enter the OTP to continue");
       return;
     }
 
+    setVerifying(true);
     try {
-      await register(formData);
+      await verifyOTP(formData.email.trim().toLowerCase(), formData.otp.trim());
+      setStatusMessage("Email verified — ready to complete registration.");
+      setStep("complete");
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || "OTP verification failed");
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const handleRegister = async (e) => {
+    e && e.preventDefault();
+    setError("");
+
+    try {
+      await register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        otp: formData.otp,
+      });
       navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed");
+      setError(err.response?.data?.message || err.message || "Registration failed");
     }
   };
 
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h2>Join Smart Study Planner</h2>
+        <h2>Create Your Account</h2>
 
-        {step === "details" && (
-          <form onSubmit={handleSendOTP}>
+        <div className="register-stepper">
+          <div className={`step ${step === 'account' ? 'active' : ''}`}>1. Account Info</div>
+          <div className={`step ${step === 'verify' ? 'active' : ''}`}>2. Verify</div>
+          <div className={`step ${step === 'complete' ? 'active' : ''}`}>3. Complete</div>
+        </div>
+
+        {step === 'account' && (
+          <form onSubmit={handleNextFromAccount}>
             <div className="form-group">
               <label>Full Name</label>
               <input
@@ -113,6 +134,17 @@ function Register() {
             </div>
 
             <div className="form-group">
+              <label>Phone Number</label>
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="Optional phone number"
+              />
+            </div>
+
+            <div className="form-group">
               <label>Password</label>
               <input
                 type={showPassword ? "text" : "password"}
@@ -134,24 +166,24 @@ function Register() {
             </div>
 
             {statusMessage && <div className="success-message">{statusMessage}</div>}
-            {devOtp && (
-              <div className="info-message">
-                Dev OTP: <strong>{devOtp}</strong>
-              </div>
-            )}
             {error && <div className="error-message">{error}</div>}
 
-            <button type="submit" className="auth-btn" disabled={loading}>
-              {loading ? "Sending OTP..." : "Send OTP"}
-            </button>
+            <div className="button-group">
+              <button type="button" className="auth-btn secondary" onClick={() => window.history.back()}>
+                Cancel
+              </button>
+              <button type="submit" className="auth-btn" disabled={loading}>
+                {loading ? 'Sending...' : 'Next'}
+              </button>
+            </div>
           </form>
         )}
 
-        {step === "otp" && (
-          <form onSubmit={handleRegister}>
+        {step === 'verify' && (
+          <form onSubmit={handleVerifyAndNext}>
             <div className="otp-instructions">
-              <p>OTP sent to {formData.email}</p>
-              <p>Enter the 6-digit code to complete registration</p>
+              <p>We've sent an OTP to {formData.email}</p>
+              <p>Enter the 6-digit code to verify your email.</p>
             </div>
 
             <div className="form-group">
@@ -168,25 +200,38 @@ function Register() {
             </div>
 
             {statusMessage && <div className="success-message">{statusMessage}</div>}
-            {devOtp && (
-              <div className="info-message">
-                Dev OTP: <strong>{devOtp}</strong>
-              </div>
-            )}
             {error && <div className="error-message">{error}</div>}
 
-            <button type="submit" className="auth-btn" disabled={loading}>
-              {loading ? "Registering..." : "Complete Registration"}
-            </button>
+            <div className="button-group">
+              <button type="button" className="auth-btn secondary" onClick={() => setStep('account')}>
+                Previous
+              </button>
+              <button type="submit" className="auth-btn" disabled={verifying || loading}>
+                {verifying ? 'Verifying...' : 'Next'}
+              </button>
+            </div>
+          </form>
+        )}
 
-            <button
-              type="button"
-              className="auth-btn secondary"
-              onClick={() => setStep("details")}
-              disabled={loading}
-            >
-              Back
-            </button>
+        {step === 'complete' && (
+          <form onSubmit={handleRegister}>
+            <div className="form-summary">
+              <h4>Confirm your details</h4>
+              <div className="summary-row"><strong>Name:</strong> {formData.name}</div>
+              <div className="summary-row"><strong>Email:</strong> {formData.email}</div>
+              <div className="summary-row"><strong>Phone:</strong> {formData.phone || '—'}</div>
+            </div>
+
+            {error && <div className="error-message">{error}</div>}
+
+            <div className="button-group">
+              <button type="button" className="auth-btn secondary" onClick={() => setStep('verify')}>
+                Previous
+              </button>
+              <button type="submit" className="auth-btn" disabled={loading}>
+                {loading ? 'Registering...' : 'Register'}
+              </button>
+            </div>
           </form>
         )}
 
