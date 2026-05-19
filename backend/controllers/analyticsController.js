@@ -8,6 +8,10 @@ const mongoose = require('mongoose');
  */
 const getDashboardStats = async (req, res) => {
   try {
+    if (!req.user || !req.user._id) {
+      return sendResponse(res, 401, 'Not authorized');
+    }
+
     const userId = new mongoose.Types.ObjectId(req.user._id);
 
     // 1. Total Stats (Time, Sessions, Avg Productivity)

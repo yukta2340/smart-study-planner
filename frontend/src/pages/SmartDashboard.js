@@ -34,7 +34,6 @@ const SIDEBAR_SECTIONS = [
     title: 'Analytics',
     items: [
       { id: 'performance', label: 'Performance', path: '/performance' },
-      { id: 'studyInsights', label: 'Study Insights', path: '/study-insights' },
     ],
   },
   {
@@ -378,27 +377,6 @@ const SmartDashboard = () => {
                         </div>
                       </div>
                     ))}
-                  </div>
-                </div>
-
-                <div className="glass-card study-insights-card">
-                  <div className="section-title-row">
-                    <h3>Study Insights</h3>
-                    <span>Smart learning tips</span>
-                  </div>
-                  <div className="insights-list">
-                    <div className="insight-item">
-                      <strong>Most Productive Day</strong>
-                      <span>Friday</span>
-                    </div>
-                    <div className="insight-item">
-                      <strong>Most Productive Time</strong>
-                      <span>7 PM - 10 PM</span>
-                    </div>
-                    <div className="insight-item">
-                      <strong>Preferred Study Mode</strong>
-                      <span>Deep Focus</span>
-                    </div>
                   </div>
                 </div>
 

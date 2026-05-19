@@ -6,7 +6,7 @@
     "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install",
     "client": "cd frontend && npm run dev",
     "server": "cd backend && npm run dev",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "dev": "concurrently \"npm run server\" \"npm run client\" \"powershell -ExecutionPolicy Bypass -File scripts\\open-in-chrome.ps1\"",
     "start": "npm run dev",
     "build": "cd frontend && npm run build"
   },

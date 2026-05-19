@@ -9,7 +9,6 @@ import Register from "./pages/Register";
 import Planner from "./pages/Planner";
 import ProgressPage from "./pages/ProgressPage";
 import PerformancePage from "./pages/PerformancePage";
-import StudyInsightsPage from "./pages/StudyInsightsPage";
 import ProfilePage from "./pages/ProfilePage";
 import ChatbotPage from "./pages/ChatbotPage";
 import SmartDashboard from "./pages/SmartDashboard";
@@ -68,15 +67,6 @@ function AppContent() {
         element={
           <ProtectedRoute>
             <PerformancePage />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/study-insights"
-        element={
-          <ProtectedRoute>
-            <StudyInsightsPage />
           </ProtectedRoute>
         }
       />

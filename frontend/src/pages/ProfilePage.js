@@ -1,16 +1,29 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import { useAppAuth } from '../context/AuthContext';
+import { getDashboardStats } from '../services/api';
 import '../styles/dashboard.css';
 
 function ProfilePage() {
-  const navigate = useNavigate();
-  const { user, logout } = useAppAuth();
+  const { user } = useAppAuth();
+  const [analytics, setAnalytics] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+  useEffect(() => {
+    const loadAnalytics = async () => {
+      try {
+        const { data } = await getDashboardStats();
+        setAnalytics(data?.data || null);
+      } catch (err) {
+        console.error('Failed to load profile analytics', err);
+        setError('Unable to load profile analytics at the moment.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAnalytics();
+  }, []);
 
   const memberSince = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString(undefined, {
@@ -19,19 +32,69 @@ function ProfilePage() {
       })
     : 'New member';
 
-  const profileDetails = [
-    { label: 'Study goal', value: user?.goal || 'Build consistency' },
-    { label: 'Daily target', value: user?.dailyTarget || '2 - 3 hours' },
-    { label: 'Preferred subjects', value: user?.preferredSubjects || 'Math, Science, English' },
-    { label: 'Tutor style', value: user?.tutorStyle || 'Friendly' },
-    { label: 'Language', value: user?.language || 'English' },
+  const totalMinutes = analytics?.summary?.totalMinutes || 0;
+  const sessionCount = analytics?.summary?.totalSessions || 0;
+  const avgProductivity = analytics?.summary?.avgProductivity
+    ? Math.round(analytics.summary.avgProductivity)
+    : '—';
+  const streakCount = user?.streak || 0;
+
+  const profileStats = [
+    {
+      label: 'Study Sessions',
+      value: loading ? 'Loading…' : sessionCount || '—',
+      hint: 'Tracked from completed study sessions',
+    },
+    {
+      label: 'Study Time',
+      value: loading
+        ? 'Loading…'
+        : totalMinutes
+        ? `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m`
+        : '—',
+      hint: 'Total minutes studied across sessions',
+    },
+    {
+      label: 'Productivity',
+      value: loading ? 'Loading…' : avgProductivity,
+      hint: 'Average session productivity',
+    },
+    {
+      label: 'Current Streak',
+      value: streakCount || '—',
+      hint: 'Updated after each study session',
+    },
   ];
 
-  const activityItems = [
-    { title: 'Completed AI notes', subtitle: 'Biology - Photosynthesis', time: '2h ago' },
-    { title: 'Quiz finished', subtitle: 'Physics - Motion in a Straight Line', time: '5h ago' },
-    { title: 'Study session', subtitle: 'Chemistry - Thermodynamics', time: '1d ago' },
+  const profileDetails = [
+    { label: 'Study goal', value: user?.goal || 'Not set yet' },
+    { label: 'Daily target', value: user?.dailyTarget || 'Not set yet' },
+    { label: 'Preferred subjects', value: user?.preferredSubjects || 'Not set yet' },
+    { label: 'Tutor style', value: user?.tutorStyle || 'Not set yet' },
+    { label: 'Language', value: user?.language || 'Not set yet' },
   ];
+
+  const activityItems = analytics?.weeklyTrend?.length
+    ? analytics.weeklyTrend.slice(-3).map((item) => ({
+        title: `Studied ${item.minutes} min`,
+        subtitle: item._id,
+        time: 'Recent',
+      }))
+    : [
+        {
+          title: 'No recent activity yet',
+          subtitle: 'Your study feed will appear here once you start.',
+          time: '',
+        },
+      ];
+
+  const achievements = [
+    { title: 'Consistency King', subtitle: 'Earned by maintaining your streak' },
+    { title: 'Quiz Master', subtitle: 'Earned by taking consistent assessments' },
+    { title: 'Quick Learner', subtitle: 'Earned by finishing study sessions efficiently' },
+  ];
+
+  const streakActiveDays = Math.min(streakCount, 7);
 
   return (
     <div className="dashboard-main profile-page">
@@ -40,10 +103,9 @@ function ProfilePage() {
           <h1>Profile</h1>
           <p>Manage your account and track your learning journey.</p>
         </div>
-        <button className="profile-edit-button" type="button" onClick={() => navigate('/profile')}>
-          Edit Profile
-        </button>
       </div>
+
+      {error && <div className="dashboard-error">{error}</div>}
 
       <div className="profile-grid">
         <div className="glass-card profile-card">
@@ -54,47 +116,31 @@ function ProfilePage() {
                 <h2>{user?.name || 'Study Scholar'}</h2>
               </div>
               <p className="profile-email">{user?.email || 'you@example.com'}</p>
-              <p className="profile-tagline">{user?.tagline || 'Learning today, leading tomorrow.'}</p>
               <p className="profile-joined">Joined {memberSince}</p>
             </div>
           </div>
 
           <div className="profile-stat-grid">
-            <div className="profile-stat-card">
-              <p>Study Sessions</p>
-              <strong>{user?.sessions || 128}</strong>
-              <span>+18 this month</span>
-            </div>
-            <div className="profile-stat-card">
-              <p>Study Time</p>
-              <strong>{user?.studyTime || '84h 32m'}</strong>
-              <span>+12h this month</span>
-            </div>
-            <div className="profile-stat-card">
-              <p>Quizzes Taken</p>
-              <strong>{user?.quizzes || 56}</strong>
-              <span>+9 this month</span>
-            </div>
-            <div className="profile-stat-card">
-              <p>Current Streak</p>
-              <strong>{user?.streak || 23} days</strong>
-              <span>Keep it up!</span>
-            </div>
+            {profileStats.map((stat) => (
+              <div key={stat.label} className="profile-stat-card">
+                <p>{stat.label}</p>
+                <strong>{stat.value}</strong>
+                <span>{stat.hint}</span>
+              </div>
+            ))}
           </div>
-
-          {/* Subscription / upgrade UI removed */}
         </div>
 
         <div className="profile-right-column">
           <div className="glass-card profile-streak-card">
             <div className="section-title-row">
               <h3>Study streak</h3>
-              <span>Best streak: 37 days</span>
+              <span>Keep your streak alive</span>
             </div>
-            <p className="streak-count">{user?.streak || 23} days</p>
+            <p className="streak-count">{streakCount} days</p>
             <div className="streak-days">
               {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
-                <div key={day} className={`streak-day ${index < 5 ? 'active' : ''}`}>
+                <div key={day} className={`streak-day ${index < streakActiveDays ? 'active' : ''}`}>
                   {day}
                 </div>
               ))}
@@ -140,11 +186,7 @@ function ProfilePage() {
               <span>Milestones unlocked</span>
             </div>
             <div className="achievement-grid">
-              {[
-                { title: 'Consistency King', subtitle: 'Study for 20 days' },
-                { title: 'Quiz Master', subtitle: 'Take 50 quizzes' },
-                { title: 'Quick Learner', subtitle: 'Complete 10 notes' },
-              ].map((achievement) => (
+              {achievements.map((achievement) => (
                 <div key={achievement.title} className="achievement-card-item">
                   <strong>{achievement.title}</strong>
                   <span>{achievement.subtitle}</span>
